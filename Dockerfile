@@ -8,7 +8,8 @@ RUN apk add --no-cache openssl
 FROM base AS deps
 WORKDIR /usr/src/app
 COPY package*.json ./
-RUN npm ci
+# Use --ignore-scripts so postinstall doesn't fail before source/prisma files are copied
+RUN npm ci --ignore-scripts
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -19,7 +20,6 @@ COPY . .
 # Run prebuild to generate both Prisma clients and build the app
 RUN npm run prebuild
 RUN npm run build
-RUN npm prune --production
 
 # Production image, copy all the files and run
 FROM base AS runner

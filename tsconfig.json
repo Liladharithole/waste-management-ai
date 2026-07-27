@@ -20,7 +20,7 @@
       "@/*": ["./src/*"]
     },
 
-    "types": ["node"],
+    "types": ["node", "jest"],
 
     "strict": true,
     "strictNullChecks": true,
@@ -34,5 +34,6 @@
     "noFallthroughCasesInSwitch": false,
 
     "ignoreDeprecations": "5.0"
-  }
+  },
+  "exclude": ["node_modules", "dist", "test"]
 }
