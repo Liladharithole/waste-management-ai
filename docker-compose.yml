@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: waste-management-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: waste_management
+      MARIADB_USER: user
+      MARIADB_PASSWORD: user_password
+    ports:
+      - '3306:3306'
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+volumes:
+  mariadb_data:
