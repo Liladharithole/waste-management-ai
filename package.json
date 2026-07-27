@@ -8,6 +8,7 @@
   "scripts": {
     "postinstall": "prisma generate --config prisma.config.ts && prisma generate --config prisma-central-core.config.ts",
     "prebuild": "prisma generate --config prisma.config.ts && prisma generate --config prisma-central-core.config.ts",
+    "prepare": "husky",
     "db:migrate": "prisma migrate dev --config prisma.config.ts",
     "db:migrate:central-core": "prisma migrate dev --config prisma-central-core.config.ts",
     "build": "nest build",
@@ -48,7 +49,9 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.0",
+    "lint-staged": "^15.4.3",
     "pino-pretty": "^13.1.3",
     "prettier": "^3.4.2",
     "prisma": "^7.8.0",
@@ -60,6 +63,15 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "jest": {
     "moduleFileExtensions": [
