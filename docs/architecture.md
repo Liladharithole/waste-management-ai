@@ -25,5 +25,5 @@
 [ Repository Layer ] ──► (Prisma ORM Methods OR Raw SQL Queries for complex logic)
        │
        ▼
-[ MariaDB / MySQL Databases ] (waste_management & central_core_db)
+[ MySQL 8.0 Databases ] (waste_management & central_core_db)
 ```

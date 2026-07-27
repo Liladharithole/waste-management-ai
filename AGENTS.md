@@ -1,4 +1,4 @@
-# AGENT.md — Master AI & Developer Operating System
+# AGENTS.md — Master AI & Developer Operating System
 
 Welcome. This document defines the **core operating principles, decision-making workflows, and execution rules** for the AI Agent (Antigravity) and human engineers working on this repository.
 
@@ -8,8 +8,8 @@ To reduce context bloat, detailed domain guidelines are modularized in the [`/do
 
 ## 🛠️ Project Databases
 
-* **Main Database**: `waste_management` (Schema: [`prisma/schema.prisma`](file://./prisma/schema.prisma))
-* **Central Core Database**: `central_core_db` (Schema: [`prisma/schema.core-central.prisma`](file://./prisma/schema.core-central.prisma))
+* **Main Database**: `waste_management` (MySQL 8.0, Schema: [`prisma/schema.prisma`](file://./prisma/schema.prisma))
+* **Central Core Database**: `central_core_db` (MySQL 8.0, Schema: [`prisma/schema.core-central.prisma`](file://./prisma/schema.core-central.prisma))
 
 ---
 

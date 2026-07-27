@@ -1,20 +1,46 @@
 version: '3.8'
 
 services:
-  mariadb:
-    image: mariadb:10.11
+  # Database Service (MySQL 8.0)
+  mysql:
+    image: mysql:8.0
     container_name: waste-management-db
     restart: always
     environment:
-      MARIADB_ROOT_PASSWORD: root_password
-      MARIADB_DATABASE: waste_management
-      MARIADB_USER: user
-      MARIADB_PASSWORD: user_password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - '3306:3306'
+      - '${DB_PORT:-3306}:3306'
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p${MYSQL_ROOT_PASSWORD}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Application API Service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: waste-management-api
+    restart: always
+    env_file:
+      - .env
+    environment:
+      # Dynamically constructs database URLs from .env variables
+      DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/waste_management
+      DATABASE_READ_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/waste_management
+      CENTRAL_CORE_DATABASE_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/central_core_db
+      CENTRAL_CORE_DATABASE_READ_URL: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/central_core_db
+    ports:
+      - '${PORT:-7001}:${PORT:-7001}'
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
-  mariadb_data:
+  mysql_data:
