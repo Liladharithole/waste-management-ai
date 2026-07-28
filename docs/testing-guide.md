@@ -3,37 +3,39 @@
 ## 🧪 Testing Requirements
 
 Every feature added or modified MUST include test coverage across multiple levels:
-* **Unit Tests**: Test individual functions, utility helpers, and service methods in isolation using mocks.
-* **Integration Tests**: Verify interaction between NestJS modules, database services, and external APIs.
-* **End-to-End (E2E) Tests**: Test complete request-response HTTP flows (`/test/app.e2e-spec.ts`).
-* **Regression Tests**: Ensure bug fixes include a regression test preventing recurrence.
+
+- **Unit Tests**: Test individual functions, utility helpers, and service methods in isolation using mocks.
+- **Integration Tests**: Verify interaction between NestJS modules, database services, and external APIs.
+- **End-to-End (E2E) Tests**: Test complete request-response HTTP flows (`/test/app.e2e-spec.ts`).
+- **Regression Tests**: Ensure bug fixes include a regression test preventing recurrence.
 
 ---
 
-## ✅ Mandatory Testing Matrix
+## 🔬 Autonomous AI Real-World Edge Case Testing
 
-For every feature or endpoint, verify and test the following scenarios:
+The AI Agent must autonomously design and execute real-world edge-case tests before marking any feature complete:
 
-### Input & Data Variations
-- [ ] **Happy Path**: Valid input yields expected output and HTTP 200/201.
-- [ ] **Invalid Input**: Out-of-range or malformed data yields HTTP 400 Bad Request.
-- [ ] **Empty Input**: Empty strings, empty arrays, or empty request body.
-- [ ] **Null & Undefined**: Missing optional parameters or null values.
-- [ ] **Missing Fields**: Payloads missing required DTO parameters.
-- [ ] **Large Payloads**: Extra large inputs testing memory and buffer handling.
-- [ ] **Duplicates**: Submitting duplicate data where uniqueness is required.
+### 1. Data Integrity & Boundary Extremes
 
-### Security & Auth Scenarios
-- [ ] **Unauthorized**: Requests missing authentication tokens yield HTTP 401.
-- [ ] **Forbidden**: Users with insufficient role privileges yield HTTP 403.
-- [ ] **Expired / Invalid Tokens**: Malformed or expired JWTs are rejected.
-- [ ] **XSS & SQL Injection**: Malicious script strings and SQL escape attempts are safely handled.
+- [ ] **Type Coercion & Malformed Data**: Passing strings where numbers are expected, object payloads where arrays are expected, or malformed JSON.
+- [ ] **Boundary Limits**: Maximum character length strings, negative numbers, floating-point precision issues, empty strings `""`, and whitespace-only strings.
+- [ ] **Null/Undefined Cascades**: Missing optional fields in DTOs, null values in database foreign keys, and undefined properties in nested objects.
+- [ ] **Duplicate Requests & Idempotency**: Submitting identical creation payloads rapidly to test unique constraint handling.
 
-### Reliability & Resilience
-- [ ] **Race Conditions & Concurrency**: Simultaneous requests updating the same entity.
-- [ ] **Database & Network Failure**: Proper error catching when database connections drop.
-- [ ] **Timeouts & Retries**: Handling slow third-party services gracefully.
-- [ ] **Rate Limiting**: Exceeding allowed request thresholds yields HTTP 429.
+### 2. Concurrency & Race Conditions
+
+- [ ] **Simultaneous Mutations**: Two concurrent requests attempting to update the same record or modify state simultaneously.
+- [ ] **Transaction Atomicity**: Ensuring multi-step database writes roll back completely if an error occurs mid-transaction.
+
+### 3. Security & Access Control
+
+- [ ] **Authentication Edge Cases**: Expired JWTs, corrupted signature tokens, missing Bearer headers, and forged role claims.
+- [ ] **Injection & Sanitization**: Strings containing `<script>` tags, SQL escape sequences, or regex-denial-of-service payloads.
+
+### 4. System Resilience & Failures
+
+- [ ] **Database Connection Interruptions**: Graceful handling and error responses when the database connection drops or times out.
+- [ ] **Rate Limit & Throttle Thresholds**: Exceeding allowed request limits returns standard HTTP 429 Too Many Requests.
 
 ---
 
