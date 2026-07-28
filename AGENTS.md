@@ -112,10 +112,12 @@ Refer to the specialized guides in [`/docs`](file://./docs) for specific standar
 - 🧹 **[Coding Standards & Clean Code](file://./docs/coding-standards.md)**: SOLID, DRY, KISS, YAGNI, OOP, composition over inheritance, readable self-documenting code.
 - 🧪 **[Testing Strategy & Mandatory Checklist](file://./docs/testing-guide.md)**: Unit, Integration, E2E, edge case matrix, and failure scenario checklist.
 - 🌐 **[API Design Guidelines](file://./docs/api-guidelines.md)**: RESTful conventions, DTO validation, standard status codes, error response envelopes.
+- 📖 **[Swagger & API Documentation](file://./docs/swagger.md)**: Interactive OpenAPI specifications, request/response models, and controller decorators.
 - 🛡️ **[Security Standards](file://./docs/security.md)**: Zero trust client inputs, XSS/SQLi defense, secret management, least privilege.
 - ⚡ **[Performance Optimization](file://./docs/performance.md)**: Query optimization, database indexing, caching strategies, event loop non-blocking.
 - 🪺 **[NestJS & Dual-Prisma Rules](file://./docs/nestjs-rules.md)**: NestJS 11 best practices, module isolation, dual database client rules (`waste_management` & `central_core_db`).
 - 🗄️ **[Database & Migration Rules](file://./docs/database.md)**: Schema evolution, index strategies, transaction safety.
+- 🕒 **[Timezone Handling & Localization](file://./docs/timezone-handling.md)**: UTC storage, timezone conversions, and ISO 8601 formatting rules.
 - ✅ **[Review & PR Quality Gates](file://./docs/review-checklist.md)**: Pre-commit checklists, quality gates, final review verification.
 
 ---

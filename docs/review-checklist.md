@@ -43,6 +43,7 @@ After generating or editing code, the AI Agent must execute a thorough self-revi
 - [ ] Database queries reside in `repositories/` (Prisma ORM for standard, Raw SQL for complex/optimized queries). Services call Repositories, never Prisma directly.
 - [ ] All inputs validated via DTOs and `class-validator`.
 - [ ] No circular dependencies introduced.
+- [ ] All dates/timestamps stored in UTC and transferred via API in ISO 8601 UTC strings.
 
 ### 7. Security & Performance
 
@@ -53,6 +54,6 @@ After generating or editing code, the AI Agent must execute a thorough self-revi
 
 ### 8. Documentation
 
-- [ ] API endpoints documented (purpose, input/output contract).
+- [ ] API endpoints documented in Swagger using appropriate decorators (@ApiTags, @ApiOperation, @ApiProperty).
 - [ ] Environment variables updated in `.env.example` if new keys were introduced.
 - [ ] [`AGENTS.md`](file://./AGENTS.md) or relevant `/docs` updated if architecture changed.

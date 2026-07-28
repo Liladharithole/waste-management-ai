@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client-central-core';
 import { createMariaDbAdapter } from '../prisma/create-mariadb-adapter';
 
@@ -20,8 +15,7 @@ export class PrismaCentralCoreReadService
 
   constructor() {
     const readUrl =
-      process.env.CENTRAL_CORE_DATABASE_READ_URL ??
-      process.env.CENTRAL_CORE_DATABASE_URL;
+      process.env.CENTRAL_CORE_DATABASE_READ_URL ?? process.env.CENTRAL_CORE_DATABASE_URL;
     if (!readUrl) {
       throw new Error(
         'CENTRAL_CORE_DATABASE_READ_URL or CENTRAL_CORE_DATABASE_URL must be set for PrismaCentralCoreReadService',

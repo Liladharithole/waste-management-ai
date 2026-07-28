@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { createMariaDbAdapter } from './create-mariadb-adapter';
 
@@ -12,18 +7,13 @@ import { createMariaDbAdapter } from './create-mariadb-adapter';
  * Set `DATABASE_READ_URL` to your replica; if omitted, falls back to `DATABASE_URL` (single-DB dev).
  */
 @Injectable()
-export class PrismaReadService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaReadService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaReadService.name);
 
   constructor() {
     const readUrl = process.env.DATABASE_READ_URL ?? process.env.DATABASE_URL;
     if (!readUrl) {
-      throw new Error(
-        'DATABASE_READ_URL or DATABASE_URL must be set for PrismaReadService',
-      );
+      throw new Error('DATABASE_READ_URL or DATABASE_URL must be set for PrismaReadService');
     }
 
     const adapter = createMariaDbAdapter(readUrl);

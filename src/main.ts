@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger as PinoLogger } from 'nestjs-pino';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 // Function to parse the CORS origins
@@ -18,7 +19,7 @@ function parseCorsOrigins(): string[] {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-// Logger for the app
+  // Logger for the app
   app.useLogger(app.get(PinoLogger));
   // Global filters for the app
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -32,8 +33,16 @@ async function bootstrap() {
       origin: corsOrigins.length === 1 ? corsOrigins[0] : corsOrigins,
       credentials: true,
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id','x-api-key','x-user-id','x-tenant-id','x-user-role'],
-      exposedHeaders: ['x-request-id','x-user-id','x-tenant-id','x-user-role'],
+      allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'x-request-id',
+        'x-api-key',
+        'x-user-id',
+        'x-tenant-id',
+        'x-user-role',
+      ],
+      exposedHeaders: ['x-request-id', 'x-user-id', 'x-tenant-id', 'x-user-role'],
       maxAge: Number(process.env.CORS_MAX_AGE ?? 600),
       preflightContinue: false,
       optionsSuccessStatus: 204,
@@ -46,18 +55,32 @@ async function bootstrap() {
   corsLogger.log(`CORS options success status: ${204}`);
   corsLogger.log(`CORS credentials: ${true}`);
   corsLogger.log(`CORS preflight continue: ${false}`);
-  corsLogger.log(`CORS methods: ${['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']}`);
-  corsLogger.log(`CORS allowed headers: ${['Content-Type', 'Authorization', 'x-request-id','x-api-key','x-user-id','x-tenant-id','x-user-role']}`);
-  corsLogger.log(`CORS exposed headers: ${['x-request-id','x-user-id','x-tenant-id','x-user-role']}`);
+  corsLogger.log(
+    `CORS methods: ${['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'].join(', ')}`,
+  );
+  corsLogger.log(
+    `CORS allowed headers: ${['Content-Type', 'Authorization', 'x-request-id', 'x-api-key', 'x-user-id', 'x-tenant-id', 'x-user-role'].join(', ')}`,
+  );
+  corsLogger.log(
+    `CORS exposed headers: ${['x-request-id', 'x-user-id', 'x-tenant-id', 'x-user-role'].join(', ')}`,
+  );
+
+  // Swagger API Documentation Setup
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Waste Management AI API')
+    .setDescription('The Waste Management AI Platform API documentation')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, swaggerDocument);
 
   const port = Number(process.env.PORT ?? 7001);
   await app.listen(port);
-// Logger for the bootstrap
+  // Logger for the bootstrap
   const bootstrapLogger = new Logger('Bootstrap');
   if (corsOrigins.length === 0) {
-    bootstrapLogger.warn(
-      'CORS_ORIGIN is not set; cross-origin browser requests may be blocked.',
-    );
+    bootstrapLogger.warn('CORS_ORIGIN is not set; cross-origin browser requests may be blocked.');
   }
   bootstrapLogger.log(`Server listening on http://localhost:${port}`);
 }

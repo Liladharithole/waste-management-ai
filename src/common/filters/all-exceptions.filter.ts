@@ -18,15 +18,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const bodyMessage = this.resolveMessage(exception);
     const stack = exception instanceof Error ? exception.stack : undefined;
-    const responseMessage = Array.isArray(bodyMessage)
-      ? bodyMessage.join(', ')
-      : bodyMessage;
+    const responseMessage = Array.isArray(bodyMessage) ? bodyMessage.join(', ') : bodyMessage;
 
     const reqId =
       typeof request.id === 'string' || typeof request.id === 'number'
