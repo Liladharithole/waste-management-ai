@@ -6,3 +6,156 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+model User {
+  id           Int           @id @default(autoincrement())
+  uuid         String        @unique @default(uuid())
+  email        String        @unique
+  passwordHash String
+  firstName    String
+  middleName   String?
+  lastName     String
+  status       String        @default("ACTIVE")
+  
+  // Audit columns
+  createdAt    DateTime      @default(now())
+  createdBy    String?
+  updatedAt    DateTime      @updatedAt
+  updatedBy    String?
+
+  // Relations
+  userRoles     UserRole[]
+  userProfile   UserProfile?
+  addresses     UserAddress[]
+  sessions      UserSession[]
+  notifications NotificationLog[]
+
+  @@index([status])
+}
+
+model Role {
+  id          Int        @id @default(autoincrement())
+  uuid        String     @unique @default(uuid())
+  name        String     @unique
+  description String?
+  
+  // Audit columns
+  createdAt   DateTime   @default(now())
+  createdBy   String?
+  updatedAt   DateTime   @updatedAt
+  updatedBy   String?
+
+  // Relations
+  userRoles   UserRole[]
+}
+
+model UserRole {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  userId    Int
+  roleId    Int
+  
+  // Audit columns
+  createdAt DateTime @default(now())
+  createdBy String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+model UserProfile {
+  id             Int       @id @default(autoincrement())
+  uuid           String    @unique @default(uuid())
+  userId         Int       @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender         String?
+  phone          String?
+  alternatePhone String?
+  dateOfBirth    DateTime?
+  avatarUrl      String?
+
+  // Audit columns
+  createdAt      DateTime  @default(now())
+  createdBy      String?
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+
+  @@index([userId])
+}
+
+model UserAddress {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  addressLabel String?  // e.g. "Home", "Office"
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  postalCode   String
+  country      String   @default("India")
+  
+  // Coordinates
+  latitude     Float
+  longitude    Float
+  
+  isDefault    Boolean  @default(false)
+
+  // Audit columns
+  createdAt    DateTime @default(now())
+  createdBy    String?
+  updatedAt    DateTime @updatedAt
+  updatedBy    String?
+
+  @@index([userId])
+}
+
+model UserSession {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  isRevoked    Boolean  @default(false)
+  expiresAt    DateTime
+
+  // Audit columns
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model NotificationLog {
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title     String
+  body      String
+  type      String
+  status    String    @default("SENT") // e.g. PENDING, SENT, FAILED, READ
+  readAt    DateTime?
+
+  // Audit columns
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+
+  @@index([userId])
+}
