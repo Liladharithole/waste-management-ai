@@ -30,41 +30,67 @@ To ensure transaction stability, reliability, and performance:
 
 ---
 
-## 🔑 Table Column Standards & Naming Conventions
+## 🔑 Table & Column Standards (Naming Conventions)
 
-Every table created in the system **MUST** follow these field conventions:
+Every table and column created in the system **MUST** follow these naming and mapping conventions:
 
-### 1. Double Identifier Columns
+### 1. Model & Table Naming
 
-Every table must use an internal integer ID for fast relational joins and a secondary unique UUID for public API visibility. The `uuid` column **MUST** be placed immediately after the `id` column:
+- **In Prisma (Schema)**: Use **PascalCase (singular)**. (e.g., `model UserAddress`, `model WasteCollection`).
+- **In Database (SQL)**: Must map to **plural snake_case** using the `@@map` decorator. (e.g. `@@map("user_addresses")`, `@@map("waste_collections")`).
 
 ```prisma
-model MyTable {
-  id    Int    @id @default(autoincrement()) // Internal primary key
-  uuid  String @unique @default(uuid())      // External API identifier
+model UserAddress {
+  id Int @id
+
+  @@map("user_addresses")
 }
 ```
 
-### 2. Mandatory Audit & Log Columns
+### 2. Column & Field Naming
 
-To track record lifecycles, every table **MUST** contain:
-
-- `createdAt DateTime @default(now())` - Set automatically in UTC when the row is created.
-- `createdBy String?` - The UUID or username of the actor who created the row.
-- `updatedAt DateTime @updatedAt` - Set automatically in UTC on any modification.
-- `updatedBy String?` - The UUID or username of the actor who last updated the row.
-
-### 3. Indexes on Foreign Keys
-
-Prisma does not index foreign keys by default in relational databases. Always place an `@@index([foreignKeyField])` on relation fields to optimize database joins:
+- **In Prisma (Schema)**: Use **camelCase**. (e.g., `firstName`, `ipAddress`, `avatarUrl`).
+- **In Database (SQL)**: Must map to **snake_case** using the `@map` decorator. (e.g., `@map("first_name")`, `@map("ip_address")`, `@map("avatar_url")`).
 
 ```prisma
-@@index([userId])
+model User {
+  firstName String @map("first_name")
+}
 ```
 
-### 4. Use Enums for Fixed Options
+### 3. Double Identifier Columns
 
-Always use database-level Enums (Prisma `enum`) for any column that has a fixed, predefined list of multiple options (e.g., `status`, `role`, `type`). This enforces type safety in your TypeScript code and guarantees database integrity by blocking invalid data values at the database layer.
+Every table must use an internal integer ID for fast relational joins and a secondary unique UUID for public API visibility. The `uuid` column **MUST** be placed physically immediately after the `id` column:
+
+```prisma
+model User {
+  id   Int    @id @default(autoincrement())
+  uuid String @unique @default(uuid()) @map("uuid")
+}
+```
+
+### 4. Mandatory Audit & Log Columns
+
+To track record lifecycles and support soft deletions, every primary entity table **MUST** contain:
+
+- `createdAt DateTime @default(now()) @map("created_at")`
+- `createdBy String? @map("created_by")`
+- `updatedAt DateTime @updatedAt @map("updated_at")`
+- `updatedBy String? @map("updated_by")`
+- `deletedAt DateTime? @map("deleted_at")`
+- `deletedBy String? @map("deleted_by")`
+
+### 5. Indexes on Foreign Keys
+
+Prisma does not index foreign keys by default in relational databases. Always place an `@@index([foreignKeyField])` on relation fields (mapped to snake_case) to optimize database joins:
+
+```prisma
+@@index([user_id]) // Mapped column name is index key
+```
+
+### 6. Use Enums for Fixed Options
+
+Always use database-level Enums (Prisma `enum`) for any column that has a fixed, predefined list of multiple options (e.g., `status`, `role`, `type`). This enforces type safety in your TypeScript code and guarantees database integrity.
 
 ---
 

@@ -8,22 +8,22 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  uuid         String        @unique @default(uuid())
-  email        String        @unique
-  passwordHash String
-  firstName    String
-  middleName   String?
-  lastName     String
-  status       String        @default("ACTIVE")
+  id            Int               @id @default(autoincrement())
+  uuid          String            @unique @default(uuid()) @map("uuid")
+  email         String            @unique @map("email")
+  passwordHash  String            @map("password_hash")
+  firstName     String            @map("first_name")
+  middleName    String?           @map("middle_name")
+  lastName      String            @map("last_name")
+  status        String            @default("ACTIVE") @map("status")
   
   // Audit columns
-  createdAt    DateTime      @default(now())
-  createdBy    String?
-  updatedAt    DateTime      @updatedAt
-  updatedBy    String?
-  deletedAt    DateTime?
-  deletedBy    String?
+  createdAt     DateTime          @default(now()) @map("created_at")
+  createdBy     String?           @map("created_by")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  updatedBy     String?           @map("updated_by")
+  deletedAt     DateTime?         @map("deleted_at")
+  deletedBy     String?           @map("deleted_by")
 
   // Relations
   userRoles     UserRole[]
@@ -35,38 +35,41 @@ model User {
   employee      Employee?
 
   @@index([status])
+  @@map("users")
 }
 
 model Role {
   id              Int              @id @default(autoincrement())
-  uuid            String           @unique @default(uuid())
-  name            String           @unique
-  description     String?
+  uuid            String           @unique @default(uuid()) @map("uuid")
+  name            String           @unique @map("name")
+  description     String?          @map("description")
   
   // Audit columns
-  createdAt       DateTime         @default(now())
-  createdBy       String?
-  updatedAt       DateTime         @updatedAt
-  updatedBy       String?
-  deletedAt       DateTime?
-  deletedBy       String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  createdBy       String?          @map("created_by")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  updatedBy       String?          @map("updated_by")
+  deletedAt       DateTime?        @map("deleted_at")
+  deletedBy       String?          @map("deleted_by")
 
   // Relations
   userRoles       UserRole[]
   rolePermissions RolePermission[]
+
+  @@map("roles")
 }
 
 model UserRole {
   id        Int      @id @default(autoincrement())
-  uuid      String   @unique @default(uuid())
-  userId    Int
-  roleId    Int
+  uuid      String   @unique @default(uuid()) @map("uuid")
+  userId    Int      @map("user_id")
+  roleId    Int      @map("role_id")
   
   // Audit columns
-  createdAt DateTime @default(now())
-  createdBy String?
-  updatedAt DateTime @updatedAt
-  updatedBy String?
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
 
   // Relations
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -75,344 +78,358 @@ model UserRole {
   @@unique([userId, roleId])
   @@index([userId])
   @@index([roleId])
+  @@map("user_roles")
 }
 
 model UserProfile {
   id             Int       @id @default(autoincrement())
-  uuid           String    @unique @default(uuid())
-  userId         Int       @unique
+  uuid           String    @unique @default(uuid()) @map("uuid")
+  userId         Int       @unique @map("user_id")
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  gender         String?
-  phone          String?
-  alternatePhone String?
-  dateOfBirth    DateTime?
-  avatarUrl      String?
+  gender         String?   @map("gender")
+  phone          String?   @map("phone")
+  alternatePhone String?   @map("alternate_phone")
+  dateOfBirth    DateTime? @map("date_of_birth")
+  avatarUrl      String?   @map("avatar_url")
 
   // Audit columns
-  createdAt      DateTime  @default(now())
-  createdBy      String?
-  updatedAt      DateTime  @updatedAt
-  updatedBy      String?
-  deletedAt      DateTime?
-  deletedBy      String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  createdBy      String?   @map("created_by")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  updatedBy      String?   @map("updated_by")
+  deletedAt      DateTime? @map("deleted_at")
+  deletedBy      String?   @map("deleted_by")
 
   @@index([userId])
+  @@map("user_profiles")
 }
 
 model UserAddress {
   id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid())
-  userId       Int
+  uuid         String   @unique @default(uuid()) @map("uuid")
+  userId       Int      @map("user_id")
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  addressLabel String?  // e.g. "Home", "Office"
-  addressLine1 String
-  addressLine2 String?
-  city         String
-  state        String
-  postalCode   String
-  country      String   @default("India")
+  addressLabel String?  @map("address_label")
+  addressLine1 String   @map("address_line_1")
+  addressLine2 String?  @map("address_line_2")
+  city         String   @map("city")
+  state        String   @map("state")
+  postalCode   String   @map("postal_code")
+  country      String   @default("India") @map("country")
   
   // Coordinates
-  latitude     Float
-  longitude    Float
+  latitude     Float    @map("latitude")
+  longitude    Float    @map("longitude")
   
-  isDefault    Boolean  @default(false)
+  isDefault    Boolean  @default(false) @map("is_default")
 
   // Audit columns
-  createdAt    DateTime @default(now())
-  createdBy    String?
-  updatedAt    DateTime @updatedAt
-  updatedBy    String?
-  deletedAt    DateTime?
-  deletedBy    String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  createdBy    String?  @map("created_by")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  updatedBy    String?  @map("updated_by")
+  deletedAt    DateTime? @map("deleted_at")
+  deletedBy    String?  @map("deleted_by")
 
   @@index([userId])
+  @@map("user_addresses")
 }
 
 model RefreshToken {
   id         BigInt    @id @default(autoincrement())
-  uuid       String    @unique @default(uuid())
-  userId     Int
+  uuid       String    @unique @default(uuid()) @map("uuid")
+  userId     Int       @map("user_id")
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  token      String    @unique
-  deviceName String?
-  ipAddress  String?
-  userAgent  String?   @db.Text
-  expiresAt  DateTime
-  lastUsedAt DateTime  @default(now())
-  revokedAt  DateTime?
+  token      String    @unique @map("token")
+  deviceName String?   @map("device_name")
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @db.Text @map("user_agent")
+  expiresAt  DateTime  @map("expires_at")
+  lastUsedAt DateTime  @default(now()) @map("last_used_at")
+  revokedAt  DateTime? @map("revoked_at")
 
   // Audit columns
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([userId])
+  @@map("refresh_tokens")
 }
-
 
 model NotificationLog {
   id        Int       @id @default(autoincrement())
-  uuid      String    @unique @default(uuid())
-  userId    Int
+  uuid      String    @unique @default(uuid()) @map("uuid")
+  userId    Int       @map("user_id")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  title     String
-  body      String
-  type      String
-  status    String    @default("SENT") // e.g. PENDING, SENT, FAILED, READ
-  readAt    DateTime?
+  title     String    @map("title")
+  body      String    @map("body")
+  type      String    @map("type")
+  status    String    @default("SENT") @map("status")
+  readAt    DateTime? @map("read_at")
 
   // Audit columns
-  createdAt DateTime  @default(now())
-  createdBy String?
-  updatedAt DateTime  @updatedAt
-  updatedBy String?
-  deletedAt DateTime?
-  deletedBy String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy String?   @map("created_by")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy String?   @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String?   @map("deleted_by")
 
   @@index([userId])
+  @@map("notification_logs")
 }
 
 model Organization {
   id        Int                   @id @default(autoincrement())
-  uuid      String                @unique @default(uuid())
-  name      String                @unique
-  status    String                @default("ACTIVE")
+  uuid      String                @unique @default(uuid()) @map("uuid")
+  name      String                @unique @map("name")
+  status    String                @default("ACTIVE") @map("status")
   
   // Audit columns
-  createdAt DateTime              @default(now())
-  createdBy String?
-  updatedAt DateTime              @updatedAt
-  updatedBy String?
-  deletedAt DateTime?
-  deletedBy String?
+  createdAt DateTime              @default(now()) @map("created_at")
+  createdBy String?               @map("created_by")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+  updatedBy String?               @map("updated_by")
+  deletedAt DateTime?             @map("deleted_at")
+  deletedBy String?               @map("deleted_by")
 
   // Relations
   settings  OrganizationSettings?
   addresses OrganizationAddress[]
   societies Society[]
   employees Employee[]
+
+  @@map("organizations")
 }
 
 model OrganizationSettings {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid())
-  organizationId Int          @unique
+  uuid           String       @unique @default(uuid()) @map("uuid")
+  organizationId Int          @unique @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
-  theme          String       @default("light")
-  timezone       String       @default("Asia/Kolkata")
-  language       String       @default("en")
+  theme          String       @default("light") @map("theme")
+  timezone       String       @default("Asia/Kolkata") @map("timezone")
+  language       String       @default("en") @map("language")
 
   // Audit columns
-  createdAt      DateTime     @default(now())
-  createdBy      String?
-  updatedAt      DateTime     @updatedAt
-  updatedBy      String?
-  deletedAt      DateTime?
-  deletedBy      String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  createdBy      String?      @map("created_by")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  updatedBy      String?      @map("updated_by")
+  deletedAt      DateTime?    @map("deleted_at")
+  deletedBy      String?      @map("deleted_by")
+
+  @@map("organization_settings")
 }
 
 model OrganizationAddress {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid())
-  organizationId Int
+  uuid           String       @unique @default(uuid()) @map("uuid")
+  organizationId Int          @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
-  addressLabel   String?      // e.g. "Headquarters", "Sorting Facility"
-  addressLine1   String
-  addressLine2   String?
-  city           String
-  state          String
-  postalCode     String
-  country        String       @default("India")
-  latitude       Float
-  longitude      Float
-  isDefault      Boolean      @default(false)
+  addressLabel   String?      @map("address_label")
+  addressLine1   String       @map("address_line_1")
+  addressLine2   String?      @map("address_line_2")
+  city           String       @map("city")
+  state          String       @map("state")
+  postalCode     String       @map("postal_code")
+  country        String       @default("India") @map("country")
+  latitude       Float        @map("latitude")
+  longitude      Float        @map("longitude")
+  isDefault      Boolean      @default(false) @map("is_default")
 
   // Audit columns
-  createdAt      DateTime     @default(now())
-  createdBy      String?
-  updatedAt      DateTime     @updatedAt
-  updatedBy      String?
-  deletedAt      DateTime?
-  deletedBy      String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  createdBy      String?      @map("created_by")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  updatedBy      String?      @map("updated_by")
+  deletedAt      DateTime?    @map("deleted_at")
+  deletedBy      String?      @map("deleted_by")
 
   @@index([organizationId])
+  @@map("organization_addresses")
 }
 
 model Society {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid())
-  organizationId Int
+  uuid           String       @unique @default(uuid()) @map("uuid")
+  organizationId Int          @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name           String
+  name           String       @map("name")
   
   // Audit columns
-  createdAt      DateTime     @default(now())
-  createdBy      String?
-  updatedAt      DateTime     @updatedAt
-  updatedBy      String?
-  deletedAt      DateTime?
-  deletedBy      String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  createdBy      String?      @map("created_by")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  updatedBy      String?      @map("updated_by")
+  deletedAt      DateTime?    @map("deleted_at")
+  deletedBy      String?      @map("deleted_by")
 
   // Relations
   buildings      Building[]
 
   @@index([organizationId])
+  @@map("societies")
 }
 
 model Building {
   id        Int      @id @default(autoincrement())
-  uuid      String   @unique @default(uuid())
-  societyId Int
+  uuid      String   @unique @default(uuid()) @map("uuid")
+  societyId Int      @map("society_id")
   society   Society  @relation(fields: [societyId], references: [id], onDelete: Cascade)
-  name      String
+  name      String   @map("name")
   
   // Audit columns
-  createdAt DateTime @default(now())
-  createdBy String?
-  updatedAt DateTime @updatedAt
-  updatedBy String?
-  deletedAt DateTime?
-  deletedBy String?
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String?  @map("deleted_by")
 
   // Relations
   floors    Floor[]
 
   @@index([societyId])
+  @@map("buildings")
 }
 
 model Floor {
   id          Int      @id @default(autoincrement())
-  uuid        String   @unique @default(uuid())
-  buildingId  Int
+  uuid        String   @unique @default(uuid()) @map("uuid")
+  buildingId  Int      @map("building_id")
   building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  floorNumber Int
-  name        String?
+  floorNumber Int      @map("floor_number")
+  name        String?  @map("name")
   
   // Audit columns
-  createdAt   DateTime @default(now())
-  createdBy   String?
-  updatedAt   DateTime @updatedAt
-  updatedBy   String?
-  deletedAt   DateTime?
-  deletedBy   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  createdBy   String?  @map("created_by")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+  deletedAt   DateTime? @map("deleted_at")
+  deletedBy   String?  @map("deleted_by")
 
   // Relations
   flats       Flat[]
 
   @@index([buildingId])
+  @@map("floors")
 }
 
 model Flat {
   id         Int       @id @default(autoincrement())
-  uuid       String    @unique @default(uuid())
-  floorId    Int
+  uuid       String    @unique @default(uuid()) @map("uuid")
+  floorId    Int       @map("floor_id")
   floor      Floor     @relation(fields: [floorId], references: [id], onDelete: Cascade)
-  flatNumber String
+  flatNumber String    @map("flat_number")
   
   // Audit columns
-  createdAt  DateTime  @default(now())
-  createdBy  String?
-  updatedAt  DateTime  @updatedAt
-  updatedBy  String?
-  deletedAt  DateTime?
-  deletedBy  String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  createdBy  String?   @map("created_by")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  updatedBy  String?   @map("updated_by")
+  deletedAt  DateTime? @map("deleted_at")
+  deletedBy  String?   @map("deleted_by")
 
   // Relations
   residents  Resident[]
 
   @@index([floorId])
-}
-
-
-model Permission {
-  id              Int              @id @default(autoincrement())
-  uuid            String           @unique @default(uuid())
-  name            String           @unique
-  description     String?
-
-  // Audit columns
-  createdAt       DateTime         @default(now())
-  createdBy       String?
-  updatedAt       DateTime         @updatedAt
-  updatedBy       String?
-  deletedAt       DateTime?
-  deletedBy       String?
-
-  // Relations
-  rolePermissions RolePermission[]
-}
-
-model RolePermission {
-  id           Int        @id @default(autoincrement())
-  uuid         String     @unique @default(uuid())
-  
-  roleId       Int
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  
-  permissionId Int
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  // Audit columns
-  createdAt    DateTime   @default(now())
-  createdBy    String?
-  updatedAt    DateTime   @updatedAt
-  updatedBy    String?
-
-  @@unique([roleId, permissionId])
-  @@index([roleId])
-  @@index([permissionId])
+  @@map("flats")
 }
 
 model Resident {
   id        Int       @id @default(autoincrement())
-  uuid      String    @unique @default(uuid())
+  uuid      String    @unique @default(uuid()) @map("uuid")
   
-  userId    Int       @unique
+  userId    Int       @unique @map("user_id")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  flatId    Int
+  flatId    Int       @map("flat_id")
   flat      Flat      @relation(fields: [flatId], references: [id], onDelete: Restrict)
 
   // Audit columns
-  createdAt DateTime  @default(now())
-  createdBy String?
-  updatedAt DateTime  @updatedAt
-  updatedBy String?
-  deletedAt DateTime?
-  deletedBy String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  createdBy String?   @map("created_by")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  updatedBy String?   @map("updated_by")
+  deletedAt DateTime? @map("deleted_at")
+  deletedBy String?   @map("deleted_by")
 
   @@index([flatId])
+  @@map("residents")
 }
 
 model Employee {
   id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid())
+  uuid           String       @unique @default(uuid()) @map("uuid")
   
-  userId         Int          @unique
+  userId         Int          @unique @map("user_id")
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  organizationId Int
+  organizationId Int          @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
-  employeeCode   String?      @unique
-  designation    String?
+  employeeCode   String?      @unique @map("employee_code")
+  designation    String?      @map("designation")
 
   // Audit columns
-  createdAt      DateTime     @default(now())
-  createdBy      String?
-  updatedAt      DateTime     @updatedAt
-  updatedBy      String?
-  deletedAt      DateTime?
-  deletedBy      String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+  createdBy      String?      @map("created_by")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  updatedBy      String?      @map("updated_by")
+  deletedAt      DateTime?    @map("deleted_at")
+  deletedBy      String?      @map("deleted_by")
 
   @@index([organizationId])
+  @@map("employees")
 }
 
+model Permission {
+  id              Int              @id @default(autoincrement())
+  uuid            String           @unique @default(uuid()) @map("uuid")
+  name            String           @unique @map("name")
+  description     String?          @map("description")
 
+  // Audit columns
+  createdAt       DateTime         @default(now()) @map("created_at")
+  createdBy       String?          @map("created_by")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  updatedBy       String?          @map("updated_by")
+  deletedAt       DateTime?        @map("deleted_at")
+  deletedBy       String?          @map("deleted_by")
 
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid()) @map("uuid")
+  
+  roleId       Int        @map("role_id")
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  permissionId Int        @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // Audit columns
+  createdAt    DateTime   @default(now()) @map("created_at")
+  createdBy    String?    @map("created_by")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  updatedBy    String?    @map("updated_by")
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}

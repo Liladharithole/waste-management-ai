@@ -8,48 +8,51 @@ datasource db {
 
 model WasteCategory {
   id          Int               @id @default(autoincrement())
-  uuid        String            @unique @default(uuid())
-  name        String            @unique
-  description String?
+  uuid        String            @unique @default(uuid()) @map("uuid")
+  name        String            @unique @map("name")
+  description String?           @map("description")
   
   // Audit columns
-  createdAt   DateTime          @default(now())
-  createdBy   String?
-  updatedAt   DateTime          @updatedAt
-  updatedBy   String?
-  deletedAt   DateTime?
-  deletedBy   String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  createdBy   String?           @map("created_by")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  updatedBy   String?           @map("updated_by")
+  deletedAt   DateTime?         @map("deleted_at")
+  deletedBy   String?           @map("deleted_by")
 
   // Relations
   collections WasteCollection[]
+
+  @@map("waste_categories")
 }
 
 model WasteCollection {
   id              Int           @id @default(autoincrement())
-  uuid            String        @unique @default(uuid())
+  uuid            String        @unique @default(uuid()) @map("uuid")
   
   // References to central_core_db User.id (Option 1 Cross-DB joins)
-  collectorUserId Int
-  residentUserId  Int
+  collectorUserId Int           @map("collector_user_id")
+  residentUserId  Int           @map("resident_user_id")
   
-  collectionDate  DateTime      @default(now())
-  wasteCategoryId Int
+  collectionDate  DateTime      @default(now()) @map("collection_date")
+  wasteCategoryId Int           @map("waste_category_id")
   wasteCategory   WasteCategory @relation(fields: [wasteCategoryId], references: [id], onDelete: Restrict)
   
-  weight          Float
-  photoUrl        String?
-  remarks         String?
-  isCollected     Boolean       @default(false)
+  weight          Float         @map("weight")
+  photoUrl        String?       @map("photo_url")
+  remarks         String?       @map("remarks")
+  isCollected     Boolean       @default(false) @map("is_collected")
 
   // Audit columns
-  createdAt       DateTime      @default(now())
-  createdBy       String?
-  updatedAt       DateTime      @updatedAt
-  updatedBy       String?
-  deletedAt       DateTime?
-  deletedBy       String?
+  createdAt       DateTime      @default(now()) @map("created_at")
+  createdBy       String?       @map("created_by")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  updatedBy       String?       @map("updated_by")
+  deletedAt       DateTime?     @map("deleted_at")
+  deletedBy       String?       @map("deleted_by")
 
   @@index([wasteCategoryId])
   @@index([collectorUserId])
   @@index([residentUserId])
+  @@map("waste_collections")
 }
