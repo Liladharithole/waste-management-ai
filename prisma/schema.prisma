@@ -5,3 +5,51 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+model WasteCategory {
+  id          Int               @id @default(autoincrement())
+  uuid        String            @unique @default(uuid())
+  name        String            @unique
+  description String?
+  
+  // Audit columns
+  createdAt   DateTime          @default(now())
+  createdBy   String?
+  updatedAt   DateTime          @updatedAt
+  updatedBy   String?
+  deletedAt   DateTime?
+  deletedBy   String?
+
+  // Relations
+  collections WasteCollection[]
+}
+
+model WasteCollection {
+  id              Int           @id @default(autoincrement())
+  uuid            String        @unique @default(uuid())
+  
+  // References to central_core_db User.id (Option 1 Cross-DB joins)
+  collectorUserId Int
+  residentUserId  Int
+  
+  collectionDate  DateTime      @default(now())
+  wasteCategoryId Int
+  wasteCategory   WasteCategory @relation(fields: [wasteCategoryId], references: [id], onDelete: Restrict)
+  
+  weight          Float
+  photoUrl        String?
+  remarks         String?
+  isCollected     Boolean       @default(false)
+
+  // Audit columns
+  createdAt       DateTime      @default(now())
+  createdBy       String?
+  updatedAt       DateTime      @updatedAt
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  @@index([wasteCategoryId])
+  @@index([collectorUserId])
+  @@index([residentUserId])
+}

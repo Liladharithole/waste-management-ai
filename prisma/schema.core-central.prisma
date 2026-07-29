@@ -22,31 +22,38 @@ model User {
   createdBy    String?
   updatedAt    DateTime      @updatedAt
   updatedBy    String?
+  deletedAt    DateTime?
+  deletedBy    String?
 
   // Relations
   userRoles     UserRole[]
   userProfile   UserProfile?
   addresses     UserAddress[]
-  sessions      UserSession[]
+  refreshTokens RefreshToken[]
   notifications NotificationLog[]
+  resident      Resident?
+  employee      Employee?
 
   @@index([status])
 }
 
 model Role {
-  id          Int        @id @default(autoincrement())
-  uuid        String     @unique @default(uuid())
-  name        String     @unique
-  description String?
+  id              Int              @id @default(autoincrement())
+  uuid            String           @unique @default(uuid())
+  name            String           @unique
+  description     String?
   
   // Audit columns
-  createdAt   DateTime   @default(now())
-  createdBy   String?
-  updatedAt   DateTime   @updatedAt
-  updatedBy   String?
+  createdAt       DateTime         @default(now())
+  createdBy       String?
+  updatedAt       DateTime         @updatedAt
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
 
   // Relations
-  userRoles   UserRole[]
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
 }
 
 model UserRole {
@@ -87,6 +94,8 @@ model UserProfile {
   createdBy      String?
   updatedAt      DateTime  @updatedAt
   updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
 
   @@index([userId])
 }
@@ -116,28 +125,33 @@ model UserAddress {
   createdBy    String?
   updatedAt    DateTime @updatedAt
   updatedBy    String?
+  deletedAt    DateTime?
+  deletedBy    String?
 
   @@index([userId])
 }
 
-model UserSession {
-  id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid())
-  userId       Int
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model RefreshToken {
+  id         BigInt    @id @default(autoincrement())
+  uuid       String    @unique @default(uuid())
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  refreshToken String   @unique
-  deviceInfo   String?
-  ipAddress    String?
-  isRevoked    Boolean  @default(false)
-  expiresAt    DateTime
+  token      String    @unique
+  deviceName String?
+  ipAddress  String?
+  userAgent  String?   @db.Text
+  expiresAt  DateTime
+  lastUsedAt DateTime  @default(now())
+  revokedAt  DateTime?
 
   // Audit columns
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([userId])
 }
+
 
 model NotificationLog {
   id        Int       @id @default(autoincrement())
@@ -156,6 +170,249 @@ model NotificationLog {
   createdBy String?
   updatedAt DateTime  @updatedAt
   updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
 
   @@index([userId])
 }
+
+model Organization {
+  id        Int                   @id @default(autoincrement())
+  uuid      String                @unique @default(uuid())
+  name      String                @unique
+  status    String                @default("ACTIVE")
+  
+  // Audit columns
+  createdAt DateTime              @default(now())
+  createdBy String?
+  updatedAt DateTime              @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  settings  OrganizationSettings?
+  addresses OrganizationAddress[]
+  societies Society[]
+  employees Employee[]
+}
+
+model OrganizationSettings {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  organizationId Int          @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  theme          String       @default("light")
+  timezone       String       @default("Asia/Kolkata")
+  language       String       @default("en")
+
+  // Audit columns
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+}
+
+model OrganizationAddress {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  addressLabel   String?      // e.g. "Headquarters", "Sorting Facility"
+  addressLine1   String
+  addressLine2   String?
+  city           String
+  state          String
+  postalCode     String
+  country        String       @default("India")
+  latitude       Float
+  longitude      Float
+  isDefault      Boolean      @default(false)
+
+  // Audit columns
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  @@index([organizationId])
+}
+
+model Society {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  
+  // Audit columns
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  // Relations
+  buildings      Building[]
+
+  @@index([organizationId])
+}
+
+model Building {
+  id        Int      @id @default(autoincrement())
+  uuid      String   @unique @default(uuid())
+  societyId Int
+  society   Society  @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  name      String
+  
+  // Audit columns
+  createdAt DateTime @default(now())
+  createdBy String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  // Relations
+  floors    Floor[]
+
+  @@index([societyId])
+}
+
+model Floor {
+  id          Int      @id @default(autoincrement())
+  uuid        String   @unique @default(uuid())
+  buildingId  Int
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floorNumber Int
+  name        String?
+  
+  // Audit columns
+  createdAt   DateTime @default(now())
+  createdBy   String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  deletedAt   DateTime?
+  deletedBy   String?
+
+  // Relations
+  flats       Flat[]
+
+  @@index([buildingId])
+}
+
+model Flat {
+  id         Int       @id @default(autoincrement())
+  uuid       String    @unique @default(uuid())
+  floorId    Int
+  floor      Floor     @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  flatNumber String
+  
+  // Audit columns
+  createdAt  DateTime  @default(now())
+  createdBy  String?
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  deletedAt  DateTime?
+  deletedBy  String?
+
+  // Relations
+  residents  Resident[]
+
+  @@index([floorId])
+}
+
+
+model Permission {
+  id              Int              @id @default(autoincrement())
+  uuid            String           @unique @default(uuid())
+  name            String           @unique
+  description     String?
+
+  // Audit columns
+  createdAt       DateTime         @default(now())
+  createdBy       String?
+  updatedAt       DateTime         @updatedAt
+  updatedBy       String?
+  deletedAt       DateTime?
+  deletedBy       String?
+
+  // Relations
+  rolePermissions RolePermission[]
+}
+
+model RolePermission {
+  id           Int        @id @default(autoincrement())
+  uuid         String     @unique @default(uuid())
+  
+  roleId       Int
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  
+  permissionId Int
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // Audit columns
+  createdAt    DateTime   @default(now())
+  createdBy    String?
+  updatedAt    DateTime   @updatedAt
+  updatedBy    String?
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model Resident {
+  id        Int       @id @default(autoincrement())
+  uuid      String    @unique @default(uuid())
+  
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  flatId    Int
+  flat      Flat      @relation(fields: [flatId], references: [id], onDelete: Restrict)
+
+  // Audit columns
+  createdAt DateTime  @default(now())
+  createdBy String?
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+  deletedAt DateTime?
+  deletedBy String?
+
+  @@index([flatId])
+}
+
+model Employee {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  
+  userId         Int          @unique
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  organizationId Int
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  
+  employeeCode   String?      @unique
+  designation    String?
+
+  // Audit columns
+  createdAt      DateTime     @default(now())
+  createdBy      String?
+  updatedAt      DateTime     @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  deletedBy      String?
+
+  @@index([organizationId])
+}
+
+
+

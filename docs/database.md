@@ -62,6 +62,10 @@ Prisma does not index foreign keys by default in relational databases. Always pl
 @@index([userId])
 ```
 
+### 4. Use Enums for Fixed Options
+
+Always use database-level Enums (Prisma `enum`) for any column that has a fixed, predefined list of multiple options (e.g., `status`, `role`, `type`). This enforces type safety in your TypeScript code and guarantees database integrity by blocking invalid data values at the database layer.
+
 ---
 
 ## 🌐 Cross-Database Join Policy
@@ -75,3 +79,110 @@ When data from `waste_management` needs to be linked with data from `central_cor
    - Finally, merge the results in the NestJS service layer before returning the response.
 
 _Rationale_: This prevents tight coupling of schemas, allows databases to be moved to different physical hosts in the future, and ensures microservice readiness.
+
+---
+
+## 🗑️ Soft-Delete Policy
+
+To prevent permanent data loss, maintain historical audit trails, and ensure relational integrity, the application enforces a **Soft-Delete Pattern** for all primary entity tables (e.g. `User`, `Organization`, `Society`, `WasteCollection`).
+
+### 1. Mandatory Columns
+
+Every primary entity table **MUST** include the following columns:
+
+- `deletedAt DateTime?` - Stores `NULL` if the record is active, and the deletion date-time if deleted.
+- `deletedBy String?` - The UUID or username of the actor who deleted the record.
+
+### 2. Execution in Code
+
+- **Never use hard-delete queries** (e.g., `prisma.user.delete()`) for entity records.
+- **Perform updates instead**: Set `deletedAt` to the current timestamp and populate `deletedBy` in the update arguments:
+  ```typescript
+  prisma.user.update({
+    where: { id },
+    data: {
+      deletedAt: new Date(),
+      deletedBy: activeUserUuid,
+    },
+  });
+  ```
+
+### 3. Query Filtering
+
+- Always filter out soft-deleted records when performing queries:
+  ```typescript
+  prisma.user.findMany({
+    where: { deletedAt: null },
+  });
+  ```
+
+### 4. Cascade Handling in Application
+
+- Database-level cascade rules (`onDelete: Cascade`) will **not** trigger on soft deletes since soft deleting is an `UPDATE` operation, not a physical `DELETE`.
+- Developers must handle cascades in the application layer using one of the two strategies outlined below depending on the depth of the hierarchy.
+
+### 5. Cascading Soft Deletes in Deep Hierarchies
+
+For deep hierarchies (e.g., `Organization` ➡️ `Society` ➡️ `Building` ➡️ `Flat`), choose the appropriate strategy:
+
+#### Strategy A: Inherited Soft Delete / Lazy Checking (Recommended)
+
+Instead of updating every nested row, **only soft-delete the top-level parent record** (e.g., the `Organization`). When querying child entities, filter using Prisma's relational check to ensure all parent entities are also active:
+
+```typescript
+// Query active flats only if their parent building, society, and organization are active
+prisma.flat.findMany({
+  where: {
+    deletedAt: null,
+    building: {
+      deletedAt: null,
+      society: {
+        deletedAt: null,
+        organization: {
+          deletedAt: null,
+        },
+      },
+    },
+  },
+});
+```
+
+- **Pros**: O(1) delete execution (single update query), instant rollback/restore of the entire hierarchy by updating just the top-level parent back to `NULL`.
+
+#### Strategy B: Recursive Service-Level updates (Atomic Transaction)
+
+Use this when you specifically want child records to reflect deletion status independently (e.g., deleting a specific `Society` and marking all its `Flats` as deleted):
+
+```typescript
+await prisma.$transaction(async (tx) => {
+  const now = new Date();
+
+  // 1. Soft-delete parent Society
+  await tx.society.update({
+    where: { id: societyId },
+    data: { deletedAt: now, deletedBy: adminUuid },
+  });
+
+  // 2. Query child Building IDs
+  const buildings = await tx.building.findMany({
+    where: { societyId, deletedAt: null },
+    select: { id: true },
+  });
+  const buildingIds = buildings.map((b) => b.id);
+
+  // 3. Soft-delete Buildings
+  await tx.building.updateMany({
+    where: { id: { in: buildingIds } },
+    data: { deletedAt: now, deletedBy: adminUuid },
+  });
+
+  // 4. Soft-delete Flats under those Buildings
+  await tx.flat.updateMany({
+    where: { buildingId: { in: buildingIds } },
+    data: { deletedAt: now, deletedBy: adminUuid },
+  });
+});
+```
+
+- **Pros**: Child records are physically marked as deleted.
+- **Cons**: Slower execution, requires transaction blocks and multiple database roundtrips.

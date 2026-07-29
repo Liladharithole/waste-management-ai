@@ -11,6 +11,7 @@
     "prepare": "husky",
     "db:migrate": "prisma migrate dev --config prisma.config.ts",
     "db:migrate:central-core": "prisma migrate dev --config prisma-central-core.config.ts",
+    "db:seed:central-core": "ts-node prisma/seed-central-core.ts",
     "build": "nest build --path tsconfig.build.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start --path tsconfig.build.json",
