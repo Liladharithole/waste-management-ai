@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 // Function to parse the CORS origins
@@ -18,7 +19,9 @@ function parseCorsOrigins(): string[] {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
+  // Trust proxy for correct client IP parsing
+  app.set('trust proxy', true);
   // Logger for the app
   app.useLogger(app.get(PinoLogger));
   // Global filters for the app
@@ -83,6 +86,7 @@ async function bootstrap() {
     bootstrapLogger.warn('CORS_ORIGIN is not set; cross-origin browser requests may be blocked.');
   }
   bootstrapLogger.log(`Server listening on http://localhost:${port}`);
+  bootstrapLogger.log(`Swagger documentation available on http://localhost:${port}/api`);
 }
 
 void bootstrap();

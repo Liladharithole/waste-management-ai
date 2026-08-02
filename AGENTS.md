@@ -1,6 +1,6 @@
 # AGENTS.md — Master AI & Developer Operating System
 
-Welcome. This document defines the **core operating principles, decision-making workflows, and execution rules** for the AI Agent (Antigravity) and human engineers working on this repository.
+Welcome. This document defines the **core operating principles, decision-making workflows, and execution rules** for the AI Agent and human engineers working on this repository.
 
 To reduce context bloat, detailed domain guidelines are modularized in the [`/docs`](file://./docs) directory.
 

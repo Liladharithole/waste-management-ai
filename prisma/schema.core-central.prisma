@@ -187,6 +187,9 @@ model Organization {
   id        Int                   @id @default(autoincrement())
   uuid      String                @unique @default(uuid()) @map("uuid")
   name      String                @unique @map("name")
+  fullName  String                @map("full_name")
+  shortName String                @map("short_name")
+  type      String                @default("GOVERNMENT") @map("type")
   status    String                @default("ACTIVE") @map("status")
   
   // Audit columns
@@ -200,7 +203,7 @@ model Organization {
   // Relations
   settings  OrganizationSettings?
   addresses OrganizationAddress[]
-  societies Society[]
+  sites     Site[]
   employees Employee[]
 
   @@map("organizations")
@@ -256,13 +259,23 @@ model OrganizationAddress {
   @@map("organization_addresses")
 }
 
-model Society {
+model Site {
   id             Int          @id @default(autoincrement())
   uuid           String       @unique @default(uuid()) @map("uuid")
   organizationId Int          @map("organization_id")
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   name           String       @map("name")
   
+  // Address Fields
+  addressLine1   String       @map("address_line_1")
+  addressLine2   String?      @map("address_line_2")
+  city           String       @map("city")
+  state          String       @map("state")
+  postalCode     String       @map("postal_code")
+  country        String       @default("India") @map("country")
+  latitude       Float        @map("latitude")
+  longitude      Float        @map("longitude")
+
   // Audit columns
   createdAt      DateTime     @default(now()) @map("created_at")
   createdBy      String?      @map("created_by")
@@ -275,15 +288,16 @@ model Society {
   buildings      Building[]
 
   @@index([organizationId])
-  @@map("societies")
+  @@map("sites")
 }
 
 model Building {
   id        Int      @id @default(autoincrement())
   uuid      String   @unique @default(uuid()) @map("uuid")
-  societyId Int      @map("society_id")
-  society   Society  @relation(fields: [societyId], references: [id], onDelete: Cascade)
+  siteId    Int      @map("site_id")
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
   name      String   @map("name")
+  wing      String?  @map("wing")
   
   // Audit columns
   createdAt DateTime @default(now()) @map("created_at")
@@ -296,7 +310,7 @@ model Building {
   // Relations
   floors    Floor[]
 
-  @@index([societyId])
+  @@index([siteId])
   @@map("buildings")
 }
 
