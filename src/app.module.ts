@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
@@ -29,6 +31,18 @@ import { FlatsModule } from './modules/flats/flats.module';
         limit: Number(process.env.THROTTLE_LIMIT ?? 100),
       },
     ]),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async () => ({
+        store: await redisStore({
+          socket: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: Number(process.env.REDIS_PORT ?? 6379),
+          },
+          ttl: Number(process.env.REDIS_TTL ?? 300000),
+        }),
+      }),
+    }),
     PrismaModule,
     PrismaCentralCoreModule,
     AuthModule,

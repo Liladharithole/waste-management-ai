@@ -52,6 +52,25 @@ Use the `@Throttle()` decorator to apply stricter rules:
 
 ---
 
+## ⚡ API Caching Standards
+
+To optimize performance and minimize database query load or third-party API costs, follow these caching principles:
+
+### 1. Cache GET Requests Only
+
+- **Rule**: Only cache safe, read-only requests (`GET` endpoints) that are slow, expensive, or change infrequently.
+- **Never Cache Write Operations**: Never cache `POST`, `PUT`, `PATCH`, or `DELETE` requests. These must always interact directly with the database in real-time.
+
+### 2. Mandatory Cache Invalidation (Syncing RAM & DB)
+
+- **Rule**: Whenever a write operation occurs (`POST`, `PATCH`, or `DELETE`), the corresponding cached key(s) in RAM **must be wiped (deleted)** immediately.
+- **Sequence**:
+  1. Write the update to the MySQL database.
+  2. Invalidate (delete) the cache keys in RAM.
+  3. The next `GET` request will result in a cache miss, fetch fresh data from the database, and write the updated state to the cache.
+
+---
+
 ## 📦 Response & Error Envelopes
 
 - Errors must pass through [`AllExceptionsFilter`](file://./src/common/filters/all-exceptions.filter.ts) to return a consistent JSON response:

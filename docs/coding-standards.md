@@ -15,8 +15,9 @@
 ### 1. Naming & Self-Documenting Code
 
 - Use meaningful, explicit names for variables, methods, and classes (`calculateTotalWasteWeight()` vs `calc()`).
-- Write self-documenting code. Avoid comments when the code can explain itself clearly.
-- Use comments only to explain **why** a complex business decision was made, never **what** the code is doing.
+- **Write Self-Documenting Code**: Code must be clean, readable, and explain itself. Avoid generic comments that simply restate what the code does.
+- **Meaningful Comments only**: Use comments to explain the **why** behind a complex business logic or constraint, never the **what** of standard code execution.
+- **Comment-as-a-Smell Rule**: If an agent or developer has to write very long comments to explain how a block of code works, **that indicates the code is poorly optimized, overly complex, or badly structured**. Instead of writing long comments, refactor the code to make it simpler, cleaner, and self-documenting.
 
 ### 2. Simplicity & Abstraction
 
