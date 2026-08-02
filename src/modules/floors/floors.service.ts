@@ -11,7 +11,7 @@ export class FloorsService {
    * Retrieves all active floors, optionally filtered by building ID.
    */
   async findAll(buildingId?: number) {
-    return this.prismaCore.floor.findMany({
+    return await this.prismaCore.floor.findMany({
       where: {
         deletedAt: null,
         ...(buildingId ? { buildingId } : {}),

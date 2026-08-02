@@ -11,7 +11,7 @@ export class FlatsService {
    * Retrieves all active flats, optionally filtered by floor ID.
    */
   async findAll(floorId?: number) {
-    return this.prismaCore.flat.findMany({
+    return await this.prismaCore.flat.findMany({
       where: {
         deletedAt: null,
         ...(floorId ? { floorId } : {}),

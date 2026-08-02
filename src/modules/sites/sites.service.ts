@@ -15,7 +15,7 @@ export class SitesService {
    * Retrieves all active sites, optionally filtered by organization ID.
    */
   async findAll(organizationId?: number) {
-    return this.prismaCore.site.findMany({
+    return await this.prismaCore.site.findMany({
       where: {
         deletedAt: null,
         ...(organizationId ? { organizationId } : {}),

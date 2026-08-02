@@ -225,4 +225,18 @@ describe('AuthService', () => {
       await expect(service.resetPassword(resetDto)).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('logoutAll', () => {
+    it('should revoke all refresh tokens for the given user', async () => {
+      prisma.refreshToken.updateMany.mockResolvedValue({ count: 3 });
+
+      const result = await service.logoutAll(1);
+
+      expect(result).toHaveProperty('message', 'Logged out successfully from all devices');
+      expect(prisma.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: 1, revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+  });
 });

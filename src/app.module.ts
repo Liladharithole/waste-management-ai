@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,6 +22,13 @@ import { FlatsModule } from './modules/flats/flats.module';
     LoggerModule.forRoot({
       pinoHttp: createPinoHttpOptions(),
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: Number(process.env.THROTTLE_TTL ?? 60000),
+        limit: Number(process.env.THROTTLE_LIMIT ?? 100),
+      },
+    ]),
     PrismaModule,
     PrismaCentralCoreModule,
     AuthModule,
@@ -33,6 +42,12 @@ import { FlatsModule } from './modules/flats/flats.module';
     FlatsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

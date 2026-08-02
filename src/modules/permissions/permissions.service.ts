@@ -11,7 +11,7 @@ export class PermissionsService {
    * Retrieves all permissions in the system.
    */
   async findAll() {
-    return this.prismaCore.permission.findMany({
+    return await this.prismaCore.permission.findMany({
       orderBy: { name: 'asc' },
     });
   }

@@ -12,7 +12,7 @@ export class RolesService {
    * Lists all roles in the system.
    */
   async findAll() {
-    return this.prismaCore.role.findMany({
+    return await this.prismaCore.role.findMany({
       orderBy: { name: 'asc' },
     });
   }

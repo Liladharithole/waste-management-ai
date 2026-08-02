@@ -1,5 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import * as express from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -17,6 +18,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user account' })
@@ -36,6 +38,7 @@ export class AuthController {
     return this.prismaFriendlyRegister(registerDto);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email and password credentials' })
@@ -82,6 +85,22 @@ export class AuthController {
   })
   async logout(@Body() logoutDto: LogoutDto) {
     return this.authService.logout(logoutDto);
+  }
+
+  @Post('logout-all')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Logout from all devices' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully logged out from all active devices.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized: Missing or invalid token.',
+  })
+  async logoutAll(@CurrentUser() user: { sub: number }) {
+    return this.authService.logoutAll(user.sub);
   }
 
   @Post('reset-password')

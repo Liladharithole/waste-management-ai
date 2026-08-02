@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { SitesService } from './sites.service';
 import { CreateSiteDto } from './dto/create-site.dto';
 import { UpdateSiteDto } from './dto/update-site.dto';
@@ -34,6 +35,7 @@ export class SitesController {
     return this.sitesService.findAll(orgId);
   }
 
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   @Get('address-suggestions')
   @RequirePermissions('sites:view', 'organizations:view')
   @ApiOperation({ summary: 'Get address suggestions for site creation via Google Places API' })

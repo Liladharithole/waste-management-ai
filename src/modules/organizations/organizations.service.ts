@@ -17,7 +17,7 @@ export class OrganizationsService {
    * Retrieves all organizations, including their settings and addresses.
    */
   async findAll() {
-    return this.prismaCore.organization.findMany({
+    return await this.prismaCore.organization.findMany({
       where: { deletedAt: null },
       include: {
         settings: true,

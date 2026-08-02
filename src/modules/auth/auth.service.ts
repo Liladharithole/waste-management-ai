@@ -253,6 +253,25 @@ export class AuthService {
   }
 
   /**
+   * Logs a user out from ALL active devices by revoking all their refresh tokens.
+   */
+  async logoutAll(userId: number) {
+    await this.prismaCore.refreshToken.updateMany({
+      where: {
+        userId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
+
+    return {
+      message: 'Logged out successfully from all devices',
+    };
+  }
+
+  /**
    * Resets a user's password using a valid reset token (idempotent, stateless).
    */
   async resetPassword(resetPasswordDto: ResetPasswordDto) {

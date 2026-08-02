@@ -11,7 +11,7 @@ export class BuildingsService {
    * Retrieves all active buildings, optionally filtered by site ID.
    */
   async findAll(siteId?: number) {
-    return this.prismaCore.building.findMany({
+    return await this.prismaCore.building.findMany({
       where: {
         deletedAt: null,
         ...(siteId ? { siteId } : {}),

@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
@@ -38,6 +39,7 @@ export class OrganizationsController {
     return this.organizationsService.findAll();
   }
 
+  @Throttle({ default: { limit: 15, ttl: 60000 } })
   @Get('address-suggestions')
   @RequirePermissions('organizations:view')
   @ApiOperation({ summary: 'Get address suggestions for organizations via Google Places API' })
