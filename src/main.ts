@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Logger as PinoLogger } from 'nestjs-pino';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -26,6 +26,14 @@ async function bootstrap() {
   app.useLogger(app.get(PinoLogger));
   // Global filters for the app
   app.useGlobalFilters(new AllExceptionsFilter());
+  // Global pipes for request validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
   // Enable shutdown hooks for the app
   app.enableShutdownHooks();
 

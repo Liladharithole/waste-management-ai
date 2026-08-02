@@ -15,21 +15,40 @@
 ## 🔒 Input Validation & DTOs
 
 - Every request payload must be validated using `class-validator` and `class-transformer` DTOs.
-- Use `ValidationPipe` globally with `whitelist: true` and `forbidNonWhitelisted: true` to prevent mass assignment vulnerabilities.
+- The NestJS `ValidationPipe` is registered globally in [main.ts](file://../src/main.ts) with `whitelist: true`, `transform: true`, and `forbidNonWhitelisted: true` to enforce strict payloads and prevent mass assignment vulnerabilities.
+- Provide descriptive validation decorators and user-friendly error messages on all DTO properties.
 
 ```typescript
 import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 
 export class CreateWasteRecordDto {
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Category is required' })
   category: string;
 
   @IsNumber()
-  @Min(0)
+  @Min(0, { message: 'Weight must be at least 0 kg' })
   weightKg: number;
 }
 ```
+
+---
+
+## 🚦 API Rate Limiting (Throttling)
+
+We protect all application endpoints from DDoS attacks, brute-force hacking, and third-party API budget drain using `@nestjs/throttler` (registered globally in [app.module.ts](file://../src/app.module.ts)).
+
+### 1. Global Defaults (Configurable via `.env`)
+
+- `THROTTLE_TTL` — Time window size in milliseconds (Default: `60000` / 1 minute).
+- `THROTTLE_LIMIT` — Max allowed requests per window (Default: `100` requests).
+
+### 2. Custom Overrides
+
+Use the `@Throttle()` decorator to apply stricter rules:
+
+- **Authentication Protection** (`/auth/login`, `/auth/register`): Stricter limit of **5 requests per minute** to prevent brute-force attacks.
+- **Google Maps Autocomplete** (`/address-suggestions`): Stricter limit of **15 requests per minute** to control API key usage costs.
 
 ---
 
