@@ -18,6 +18,19 @@
 - The NestJS `ValidationPipe` is registered globally in [main.ts](file://../src/main.ts) with `whitelist: true`, `transform: true`, and `forbidNonWhitelisted: true` to enforce strict payloads and prevent mass assignment vulnerabilities.
 - Provide descriptive validation decorators and user-friendly error messages on all DTO properties.
 
+### DTO Contract for AI-Generated Code
+
+Every new or modified DTO must:
+
+- Use `@ApiProperty` or `@ApiPropertyOptional` for Swagger documentation.
+- Validate numeric IDs as positive integers.
+- Validate required strings with non-empty and length constraints.
+- Reject whitespace-only required strings when business meaning requires actual content.
+- Validate latitude and longitude with proper coordinate bounds.
+- Validate enums with explicit allowed values.
+- Avoid accepting trusted system fields from clients, including `createdBy`, `updatedBy`, `deletedBy`, privileged `status`, role escalation fields, or permission escalation fields unless the user explicitly approves the API contract.
+- Use DTO-level examples that match the actual domain (`organization`, `site`, `building`, `floor`, `flat`, `waste category`, `waste collection`) instead of generic placeholder data.
+
 ```typescript
 import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';
 

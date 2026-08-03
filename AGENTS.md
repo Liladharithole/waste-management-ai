@@ -25,6 +25,26 @@ Whenever the user requests a new feature, bug fix, or architectural change:
 
 ## 🚦 Core Decision & Planning Workflow
 
+### 0. Task Mode Classification
+
+Before acting, the AI Agent **MUST classify the request** into one of these modes and behave accordingly:
+
+1. **Analysis Mode**
+   - Use when the user asks to inspect, explain, review, summarize, recommend, or compare.
+   - Do not edit files, create migrations, install packages, or change runtime state.
+   - Provide findings, risks, and recommendations only.
+
+2. **Planning Mode**
+   - Use for non-trivial features, architecture changes, Prisma schema changes, database migrations, authentication/authorization changes, permission model changes, new integrations, package changes, or changes touching more than one domain module.
+   - Inspect relevant code and docs first.
+   - Present a decision proposal and wait for explicit approval.
+
+3. **Implementation Mode**
+   - Use only after explicit user approval, or for small safe fixes that do not change architecture, schema, auth, permissions, dependencies, or public API contracts.
+   - Make minimal scoped changes.
+   - Run the appropriate tests/build checks.
+   - Self-review before the final response.
+
 ### 1. Never Implement Immediately
 
 Before writing code for any non-trivial feature or architectural modification:
@@ -35,6 +55,17 @@ Before writing code for any non-trivial feature or architectural modification:
 4. **Explain trade-offs**: Present alternative solutions with Pros/Cons.
 5. **Wait for approval**: Stop and receive explicit user confirmation.
 6. **Only then implement**.
+
+The following changes **ALWAYS require a decision proposal and explicit approval before implementation**:
+
+- Prisma schema changes or database migrations.
+- Authentication, authorization, JWT, role, or permission changes.
+- New modules, major refactors, or architecture changes.
+- Changes touching more than one domain module.
+- Cross-database relationship or ownership changes.
+- New external integrations, API clients, queues, caches, or background jobs.
+- Package installation, dependency upgrades, or runtime configuration changes.
+- Public API contract changes, including endpoint paths, request DTOs, response shapes, or status-code behavior.
 
 ### 2. Decision Proposal Format
 
@@ -101,6 +132,142 @@ Immediately after writing or modifying any code, the AI Agent **MUST thoroughly 
 2. **Architectural & Rules Verification**: Verify that the code respects SOLID, DRY, KISS, YAGNI, thin controllers, and repository-layer isolation.
 3. **Edge Case & Error Handling Audit**: Ensure all input validation, null/undefined checks, and exception boundaries are properly handled.
 4. **Empirical Runtime Verification**: Run build checks, unit/E2E tests, or API execution commands to gather concrete proof that the code runs cleanly. Never declare success based on assumptions.
+
+---
+
+## 🔐 Permission & Authorization Contract
+
+Permissions must follow this exact format:
+
+```text
+resource:action
+```
+
+Allowed actions are:
+
+- `view`
+- `create`
+- `update`
+- `delete`
+- `assign`
+- `revoke`
+
+The AI Agent **MUST NOT invent broad permission names** such as:
+
+- `resource:manage`
+- `resource:admin`
+- `resource:*`
+
+Before adding or changing any `@RequirePermissions()` decorator, the AI Agent **MUST verify**:
+
+1. The exact permission string exists in [`prisma/permissions.ts`](file://./prisma/permissions.ts).
+2. The permission is seeded by the central-core seed flow.
+3. The controller uses the exact same permission name.
+4. The endpoint action matches the permission action (`POST` uses `create`, `PATCH` uses `update`, `DELETE` uses `delete`, assignment routes use `assign`/`revoke`).
+
+If the current code uses permission names that do not exist in the seed file, the AI Agent must stop and propose a cleanup plan before changing authorization behavior.
+
+---
+
+## 🧱 Repository Layer Contract
+
+This repository is moving toward strict repository-layer isolation.
+
+For all **new modules** and all **major rewrites**:
+
+- Controllers must call services only.
+- Services must call repositories for database access.
+- Repositories must own all Prisma queries and raw SQL.
+- Services must not inject `PrismaService` or `PrismaCentralCoreService` directly.
+
+Existing modules may still contain direct Prisma usage. Do not refactor those opportunistically unless the user explicitly approves that refactor or the current task requires touching that module deeply.
+
+Required new feature structure:
+
+```text
+src/modules/<feature>/
+- <feature>.module.ts
+- <feature>.controller.ts
+- <feature>.service.ts
+- dto/
+- repositories/
+  - <feature>.repository.ts
+```
+
+---
+
+## 🗑️ Deletion Contract
+
+Default deletion behavior is **soft delete** for primary entity tables that contain `deletedAt` and `deletedBy`.
+
+DELETE endpoints for primary entities must:
+
+- Set `deletedAt`.
+- Set `deletedBy` when authenticated user context is available.
+- Exclude soft-deleted records from normal reads.
+- Check child dependencies before deletion when business rules require preserving hierarchy integrity.
+
+Hard delete is allowed only when:
+
+- The model is a pure mapping table, such as `UserRole` or `RolePermission`.
+- The user explicitly requests hard delete.
+- A decision proposal explains why permanent deletion is safe.
+
+---
+
+## 🧭 Dual Database Ownership Contract
+
+Use `central_core_db` for:
+
+- Users, profiles, addresses, sessions, and notifications.
+- Roles, permissions, user-role mappings, and role-permission mappings.
+- Organizations, organization settings, organization addresses.
+- Sites, buildings, floors, flats, residents, and employees.
+
+Use `waste_management` for:
+
+- Waste categories.
+- Waste collections.
+- Operational waste records.
+- Collection photos and collection metrics.
+- Waste-operation complaints.
+- Reports and dashboards derived from waste operations.
+
+Do not create direct Prisma relations across databases. Cross-database links must be stored as scalar IDs and validated in the service/repository layer.
+
+---
+
+## 📦 DTO, Swagger & API Contract
+
+Every request DTO must:
+
+- Use `class-validator`.
+- Use `@ApiProperty` or `@ApiPropertyOptional`.
+- Validate IDs as positive integers.
+- Validate string length and reject empty/whitespace-only values when the field is required.
+- Validate latitude and longitude bounds for coordinate fields.
+- Avoid accepting trusted audit/security fields from clients, such as `createdBy`, `updatedBy`, `deletedBy`, privileged `status`, role escalation, or permission escalation fields unless explicitly approved.
+
+Every protected endpoint must:
+
+- Use `@ApiBearerAuth()`.
+- Use the correct guard(s).
+- Use exact permissions from [`prisma/permissions.ts`](file://./prisma/permissions.ts).
+
+---
+
+## 🧾 Final Response Contract
+
+After implementation, the AI Agent must report:
+
+- Files changed.
+- Behavior changed.
+- Test/build commands run.
+- Whether verification passed.
+- Any skipped verification and the reason.
+- Remaining risks or follow-up work.
+
+The AI Agent must never claim a feature is complete without empirical verification.
 
 ---
 

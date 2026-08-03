@@ -15,6 +15,26 @@ This document defines the core database schema standards, transaction patterns, 
 
 Do **NOT** mix models or create direct Prisma relations across these schemas.
 
+### 2. Model Ownership Contract
+
+Use `central_core_db` for:
+
+- Users, profiles, user addresses, refresh tokens, and notification logs.
+- Roles, permissions, user-role mappings, and role-permission mappings.
+- Organizations, organization settings, and organization addresses.
+- Sites, buildings, floors, flats, residents, and employees.
+
+Use `waste_management` for:
+
+- Waste categories.
+- Waste collections.
+- Operational waste records.
+- Collection photos and metrics.
+- Waste-operation complaints.
+- Reports and dashboards derived from operational waste data.
+
+Cross-database references must be scalar IDs only. For example, a `WasteCollection` may store `residentUserId` or `collectorUserId` from `central_core_db`, but Prisma must not define a direct relation between the two databases.
+
 ---
 
 ## ⚡ ACID & DBMS Design Principles
@@ -133,6 +153,15 @@ Every primary entity table **MUST** include the following columns:
   });
   ```
 
+Hard delete is allowed only for pure mapping tables, such as `UserRole` or `RolePermission`, or when the user explicitly approves permanent deletion after a decision proposal.
+
+For primary entity DELETE endpoints, the agent must:
+
+- Check whether the model has `deletedAt` and `deletedBy`.
+- Use `update`/`updateMany` to soft-delete instead of `delete`.
+- Set `deletedBy` from authenticated user context when available.
+- Preserve dependency checks before deletion when deleting a parent would break business rules.
+
 ### 3. Query Filtering
 
 - Always filter out soft-deleted records when performing queries:
@@ -141,6 +170,8 @@ Every primary entity table **MUST** include the following columns:
     where: { deletedAt: null },
   });
   ```
+
+For hierarchy reads, also account for deleted parents. A child record is not considered active if any required parent in its hierarchy is soft-deleted.
 
 ### 4. Cascade Handling in Application
 
