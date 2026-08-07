@@ -20,6 +20,8 @@ import { FloorsModule } from './modules/floors/floors.module';
 import { UnitsModule } from './modules/units/units.module';
 import { ResidentsModule } from './modules/residents/residents.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { WasteCategoriesModule } from './modules/waste-categories/waste-categories.module';
+import { WasteCollectionsModule } from './modules/waste-collections/waste-collections.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { EmployeesModule } from './modules/employees/employees.module';
     UnitsModule,
     ResidentsModule,
     EmployeesModule,
+    WasteCategoriesModule,
+    WasteCollectionsModule,
   ],
   controllers: [AppController],
   providers: [
