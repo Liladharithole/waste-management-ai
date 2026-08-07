@@ -22,6 +22,7 @@ import { ResidentsModule } from './modules/residents/residents.module';
 import { EmployeesModule } from './modules/employees/employees.module';
 import { WasteCategoriesModule } from './modules/waste-categories/waste-categories.module';
 import { WasteCollectionsModule } from './modules/waste-collections/waste-collections.module';
+import { ComplaintsModule } from './modules/complaints/complaints.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { WasteCollectionsModule } from './modules/waste-collections/waste-collec
     EmployeesModule,
     WasteCategoriesModule,
     WasteCollectionsModule,
+    ComplaintsModule,
   ],
   controllers: [AppController],
   providers: [

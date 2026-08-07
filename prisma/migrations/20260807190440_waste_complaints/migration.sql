@@ -1,0 +1,32 @@
+-- CreateTable
+CREATE TABLE `waste_complaints` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `uuid` VARCHAR(191) NOT NULL,
+    `complaint_number` VARCHAR(191) NOT NULL,
+    `resident_user_id` INTEGER NOT NULL,
+    `unit_id` INTEGER NULL,
+    `assigned_employee_id` INTEGER NULL,
+    `complaint_type` VARCHAR(191) NOT NULL,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `photo_url` VARCHAR(191) NULL,
+    `priority` ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') NOT NULL DEFAULT 'MEDIUM',
+    `status` ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'REJECTED') NOT NULL DEFAULT 'OPEN',
+    `resolution_notes` VARCHAR(191) NULL,
+    `resolution_photo_url` VARCHAR(191) NULL,
+    `resolved_at` DATETIME(3) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `created_by` VARCHAR(191) NULL,
+    `updated_at` DATETIME(3) NOT NULL,
+    `updated_by` VARCHAR(191) NULL,
+    `deleted_at` DATETIME(3) NULL,
+    `deleted_by` VARCHAR(191) NULL,
+
+    UNIQUE INDEX `waste_complaints_uuid_key`(`uuid`),
+    UNIQUE INDEX `waste_complaints_complaint_number_key`(`complaint_number`),
+    INDEX `waste_complaints_resident_user_id_idx`(`resident_user_id`),
+    INDEX `waste_complaints_assigned_employee_id_idx`(`assigned_employee_id`),
+    INDEX `waste_complaints_unit_id_idx`(`unit_id`),
+    INDEX `waste_complaints_status_idx`(`status`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

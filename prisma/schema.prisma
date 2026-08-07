@@ -56,3 +56,54 @@ model WasteCollection {
   @@index([residentUserId])
   @@map("waste_collections")
 }
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+enum ComplaintPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model WasteComplaint {
+  id                 Int               @id @default(autoincrement())
+  uuid               String            @unique @default(uuid()) @map("uuid")
+  complaintNumber    String            @unique @map("complaint_number")
+  
+  // Cross-DB references to central_core_db (User.id & Unit.id)
+  residentUserId     Int               @map("resident_user_id")
+  unitId             Int?              @map("unit_id")
+  assignedEmployeeId Int?              @map("assigned_employee_id")
+  
+  complaintType      String            @map("complaint_type")
+  title              String            @map("title")
+  description        String?           @map("description")
+  photoUrl           String?           @map("photo_url")
+  priority           ComplaintPriority @default(MEDIUM) @map("priority")
+  status             ComplaintStatus   @default(OPEN) @map("status")
+
+  resolutionNotes    String?           @map("resolution_notes")
+  resolutionPhotoUrl String?           @map("resolution_photo_url")
+  resolvedAt         DateTime?         @map("resolved_at")
+
+  // Audit columns
+  createdAt          DateTime          @default(now()) @map("created_at")
+  createdBy          String?           @map("created_by")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  updatedBy          String?           @map("updated_by")
+  deletedAt          DateTime?         @map("deleted_at")
+  deletedBy          String?           @map("deleted_by")
+
+  @@index([residentUserId])
+  @@index([assignedEmployeeId])
+  @@index([unitId])
+  @@index([status])
+  @@map("waste_complaints")
+}
