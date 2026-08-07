@@ -23,6 +23,7 @@ import { EmployeesModule } from './modules/employees/employees.module';
 import { WasteCategoriesModule } from './modules/waste-categories/waste-categories.module';
 import { WasteCollectionsModule } from './modules/waste-collections/waste-collections.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { ComplaintsModule } from './modules/complaints/complaints.module';
     WasteCategoriesModule,
     WasteCollectionsModule,
     ComplaintsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -210,22 +210,26 @@ model Organization {
 }
 
 model OrganizationSettings {
-  id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid()) @map("uuid")
-  organizationId Int          @unique @map("organization_id")
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id                   Int          @id @default(autoincrement())
+  uuid                 String       @unique @default(uuid()) @map("uuid")
+  organizationId       Int          @unique @map("organization_id")
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
-  theme          String       @default("light") @map("theme")
-  timezone       String       @default("Asia/Kolkata") @map("timezone")
-  language       String       @default("en") @map("language")
+  theme                String       @default("light") @map("theme")
+  timezone             String       @default("Asia/Kolkata") @map("timezone")
+  language             String       @default("en") @map("language")
+
+  // Custom SLA Threshold Rules (in hours)
+  highPrioritySlaHours Int          @default(24) @map("high_priority_sla_hours")
+  lowPrioritySlaHours  Int          @default(48) @map("low_priority_sla_hours")
 
   // Audit columns
-  createdAt      DateTime     @default(now()) @map("created_at")
-  createdBy      String?      @map("created_by")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  updatedBy      String?      @map("updated_by")
-  deletedAt      DateTime?    @map("deleted_at")
-  deletedBy      String?      @map("deleted_by")
+  createdAt            DateTime     @default(now()) @map("created_at")
+  createdBy            String?      @map("created_by")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  updatedBy            String?      @map("updated_by")
+  deletedAt            DateTime?    @map("deleted_at")
+  deletedBy            String?      @map("deleted_by")
 
   @@map("organization_settings")
 }
@@ -260,35 +264,56 @@ model OrganizationAddress {
 }
 
 model Site {
-  id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid()) @map("uuid")
-  organizationId Int          @map("organization_id")
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name           String       @map("name")
+  id             Int           @id @default(autoincrement())
+  uuid           String        @unique @default(uuid()) @map("uuid")
+  organizationId Int           @map("organization_id")
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String        @map("name")
   
   // Address Fields
-  addressLine1   String       @map("address_line_1")
-  addressLine2   String?      @map("address_line_2")
-  city           String       @map("city")
-  state          String       @map("state")
-  postalCode     String       @map("postal_code")
-  country        String       @default("India") @map("country")
-  latitude       Float        @map("latitude")
-  longitude      Float        @map("longitude")
+  addressLine1   String        @map("address_line_1")
+  addressLine2   String?       @map("address_line_2")
+  city           String        @map("city")
+  state          String        @map("state")
+  postalCode     String        @map("postal_code")
+  country        String        @default("India") @map("country")
+  latitude       Float         @map("latitude")
+  longitude      Float         @map("longitude")
 
   // Audit columns
-  createdAt      DateTime     @default(now()) @map("created_at")
-  createdBy      String?      @map("created_by")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  updatedBy      String?      @map("updated_by")
-  deletedAt      DateTime?    @map("deleted_at")
-  deletedBy      String?      @map("deleted_by")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  createdBy      String?       @map("created_by")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  updatedBy      String?       @map("updated_by")
+  deletedAt      DateTime?     @map("deleted_at")
+  deletedBy      String?       @map("deleted_by")
 
   // Relations
+  settings       SiteSettings?
   buildings      Building[]
 
   @@index([organizationId])
   @@map("sites")
+}
+
+model SiteSettings {
+  id                   Int       @id @default(autoincrement())
+  uuid                 String    @unique @default(uuid()) @map("uuid")
+  siteId               Int       @unique @map("site_id")
+  site                 Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  
+  highPrioritySlaHours Int       @default(24) @map("high_priority_sla_hours")
+  lowPrioritySlaHours  Int       @default(48) @map("low_priority_sla_hours")
+
+  // Audit columns
+  createdAt            DateTime  @default(now()) @map("created_at")
+  createdBy            String?   @map("created_by")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  updatedBy            String?   @map("updated_by")
+  deletedAt            DateTime? @map("deleted_at")
+  deletedBy            String?   @map("deleted_by")
+
+  @@map("site_settings")
 }
 
 model Building {
