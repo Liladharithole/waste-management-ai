@@ -29,7 +29,7 @@ Every new or modified DTO must:
 - Validate latitude and longitude with proper coordinate bounds.
 - Validate enums with explicit allowed values.
 - Avoid accepting trusted system fields from clients, including `createdBy`, `updatedBy`, `deletedBy`, privileged `status`, role escalation fields, or permission escalation fields unless the user explicitly approves the API contract.
-- Use DTO-level examples that match the actual domain (`organization`, `site`, `building`, `floor`, `flat`, `waste category`, `waste collection`) instead of generic placeholder data.
+- Use DTO-level examples that match the actual domain (`organization`, `site`, `building`, `floor`, `unit`, `waste category`, `waste collection`) instead of generic placeholder data.
 
 ```typescript
 import { IsString, IsNotEmpty, IsNumber, Min } from 'class-validator';

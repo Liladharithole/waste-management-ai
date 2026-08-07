@@ -17,7 +17,9 @@ import { GoogleMapsModule } from './modules/google-maps/google-maps.module';
 import { SitesModule } from './modules/sites/sites.module';
 import { BuildingsModule } from './modules/buildings/buildings.module';
 import { FloorsModule } from './modules/floors/floors.module';
-import { FlatsModule } from './modules/flats/flats.module';
+import { UnitsModule } from './modules/units/units.module';
+import { ResidentsModule } from './modules/residents/residents.module';
+import { EmployeesModule } from './modules/employees/employees.module';
 
 @Module({
   imports: [
@@ -53,7 +55,9 @@ import { FlatsModule } from './modules/flats/flats.module';
     SitesModule,
     BuildingsModule,
     FloorsModule,
-    FlatsModule,
+    UnitsModule,
+    ResidentsModule,
+    EmployeesModule,
   ],
   controllers: [AppController],
   providers: [

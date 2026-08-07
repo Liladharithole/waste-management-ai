@@ -18,6 +18,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
 @ApiTags('Buildings')
 @ApiBearerAuth()
 @Controller('buildings')
@@ -27,11 +29,11 @@ export class BuildingsController {
 
   @Get()
   @RequirePermissions('sites:view', 'organizations:view')
-  @ApiOperation({ summary: 'Get all active buildings' })
-  @ApiResponse({ status: 200, description: 'Return all buildings.' })
-  async findAll(@Query('siteId') siteId?: string) {
+  @ApiOperation({ summary: 'Get all active buildings with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated buildings.' })
+  async findAll(@Query() paginationDto: PaginationQueryDto, @Query('siteId') siteId?: string) {
     const parsedSiteId = siteId ? parseInt(siteId, 10) : undefined;
-    return this.buildingsService.findAll(parsedSiteId);
+    return this.buildingsService.findAll(paginationDto, parsedSiteId);
   }
 
   @Get(':id')

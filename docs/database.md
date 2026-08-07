@@ -22,7 +22,7 @@ Use `central_core_db` for:
 - Users, profiles, user addresses, refresh tokens, and notification logs.
 - Roles, permissions, user-role mappings, and role-permission mappings.
 - Organizations, organization settings, and organization addresses.
-- Sites, buildings, floors, flats, residents, and employees.
+- Sites, buildings, floors, units, residents, and employees.
 
 Use `waste_management` for:
 
@@ -187,8 +187,8 @@ For deep hierarchies (e.g., `Organization` ➡️ `Society` ➡️ `Building` �
 Instead of updating every nested row, **only soft-delete the top-level parent record** (e.g., the `Organization`). When querying child entities, filter using Prisma's relational check to ensure all parent entities are also active:
 
 ```typescript
-// Query active flats only if their parent building, society, and organization are active
-prisma.flat.findMany({
+// Query active units only if their parent building, society, and organization are active
+prisma.unit.findMany({
   where: {
     deletedAt: null,
     building: {
@@ -208,7 +208,7 @@ prisma.flat.findMany({
 
 #### Strategy B: Recursive Service-Level updates (Atomic Transaction)
 
-Use this when you specifically want child records to reflect deletion status independently (e.g., deleting a specific `Society` and marking all its `Flats` as deleted):
+Use this when you specifically want child records to reflect deletion status independently (e.g., deleting a specific `Society` and marking all its `Units` as deleted):
 
 ```typescript
 await prisma.$transaction(async (tx) => {
@@ -233,8 +233,8 @@ await prisma.$transaction(async (tx) => {
     data: { deletedAt: now, deletedBy: adminUuid },
   });
 
-  // 4. Soft-delete Flats under those Buildings
-  await tx.flat.updateMany({
+  // 4. Soft-delete Units under those Buildings
+  await tx.unit.updateMany({
     where: { buildingId: { in: buildingIds } },
     data: { deletedAt: now, deletedBy: adminUuid },
   });

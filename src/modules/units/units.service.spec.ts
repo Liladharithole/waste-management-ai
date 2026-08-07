@@ -1,17 +1,17 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { FlatsService } from './flats.service';
+import { UnitsService } from './units.service';
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
 
-describe('FlatsService', () => {
-  let service: FlatsService;
+describe('UnitsService', () => {
+  let service: UnitsService;
   let prisma: any;
 
   const mockPrisma = {
     floor: {
       findUnique: jest.fn(),
     },
-    flat: {
+    unit: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
@@ -25,54 +25,56 @@ describe('FlatsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FlatsService, { provide: PrismaCentralCoreService, useValue: mockPrisma }],
+      providers: [UnitsService, { provide: PrismaCentralCoreService, useValue: mockPrisma }],
     }).compile();
 
-    service = module.get<FlatsService>(FlatsService);
+    service = module.get<UnitsService>(UnitsService);
     prisma = module.get<PrismaCentralCoreService>(PrismaCentralCoreService);
 
     jest.clearAllMocks();
   });
 
   describe('findAll', () => {
-    it('should return all flats', async () => {
-      const mockList = [{ id: 1, flatNumber: '302' }];
-      prisma.flat.findMany.mockResolvedValue(mockList);
+    it('should return paginated units', async () => {
+      const mockList = [{ id: 1, unitNumber: '302' }];
+      prisma.unit.findMany.mockResolvedValue(mockList);
+      prisma.unit.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 
   describe('findOne', () => {
-    it('should return flat if found', async () => {
-      const mockFlat = { id: 1, flatNumber: '302' };
-      prisma.flat.findUnique.mockResolvedValue(mockFlat);
+    it('should return unit if found', async () => {
+      const mockUnit = { id: 1, unitNumber: '302' };
+      prisma.unit.findUnique.mockResolvedValue(mockUnit);
 
       const result = await service.findOne(1);
 
-      expect(result).toEqual(mockFlat);
+      expect(result).toEqual(mockUnit);
     });
 
-    it('should throw NotFoundException if flat missing', async () => {
-      prisma.flat.findUnique.mockResolvedValue(null);
+    it('should throw NotFoundException if unit missing', async () => {
+      prisma.unit.findUnique.mockResolvedValue(null);
 
       await expect(service.findOne(1)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('create', () => {
-    const dto = { floorId: 1, flatNumber: '302' };
+    const dto = { floorId: 1, unitNumber: '302' };
 
-    it('should create flat if floor exists', async () => {
+    it('should create unit if floor exists', async () => {
       prisma.floor.findUnique.mockResolvedValue({ id: 1, floorNumber: 3 });
-      prisma.flat.create.mockResolvedValue({ id: 10, ...dto });
+      prisma.unit.create.mockResolvedValue({ id: 10, ...dto });
 
       const result = await service.create(dto);
 
       expect(result).toHaveProperty('id', 10);
-      expect(prisma.flat.create).toHaveBeenCalledWith({ data: dto });
+      expect(prisma.unit.create).toHaveBeenCalledWith({ data: dto });
     });
 
     it('should throw NotFoundException if floor does not exist', async () => {
@@ -83,29 +85,29 @@ describe('FlatsService', () => {
   });
 
   describe('update', () => {
-    const dto = { flatNumber: '302-A' };
+    const dto = { unitNumber: '302-A' };
 
-    it('should update flat details', async () => {
-      prisma.flat.findUnique.mockResolvedValue({ id: 10, flatNumber: '302' });
-      prisma.flat.update.mockResolvedValue({ id: 10, flatNumber: '302-A' });
+    it('should update unit details', async () => {
+      prisma.unit.findUnique.mockResolvedValue({ id: 10, unitNumber: '302' });
+      prisma.unit.update.mockResolvedValue({ id: 10, unitNumber: '302-A' });
 
       const result = await service.update(10, dto);
 
-      expect(result).toHaveProperty('flatNumber', '302-A');
+      expect(result).toHaveProperty('unitNumber', '302-A');
     });
 
-    it('should throw NotFoundException if flat missing', async () => {
-      prisma.flat.findUnique.mockResolvedValue(null);
+    it('should throw NotFoundException if unit missing', async () => {
+      prisma.unit.findUnique.mockResolvedValue(null);
 
       await expect(service.update(10, dto)).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('delete', () => {
-    it('should delete flat if no residents assigned', async () => {
-      prisma.flat.findUnique.mockResolvedValue({ id: 10, flatNumber: '302' });
+    it('should delete unit if no residents assigned', async () => {
+      prisma.unit.findUnique.mockResolvedValue({ id: 10, unitNumber: '302' });
       prisma.resident.count.mockResolvedValue(0);
-      prisma.flat.delete.mockResolvedValue({ id: 10 });
+      prisma.unit.delete.mockResolvedValue({ id: 10 });
 
       const result = await service.delete(10);
 
@@ -113,7 +115,7 @@ describe('FlatsService', () => {
     });
 
     it('should throw ConflictException if residents are assigned', async () => {
-      prisma.flat.findUnique.mockResolvedValue({ id: 10, flatNumber: '302' });
+      prisma.unit.findUnique.mockResolvedValue({ id: 10, unitNumber: '302' });
       prisma.resident.count.mockResolvedValue(2);
 
       await expect(service.delete(10)).rejects.toThrow(ConflictException);

@@ -2,26 +2,41 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
 import { CreateBuildingDto } from './dto/create-building.dto';
 import { UpdateBuildingDto } from './dto/update-building.dto';
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class BuildingsService {
   constructor(private readonly prismaCore: PrismaCentralCoreService) {}
 
   /**
-   * Retrieves all active buildings, optionally filtered by site ID.
+   * Retrieves all active buildings with pagination.
    */
-  async findAll(siteId?: number) {
-    return await this.prismaCore.building.findMany({
-      where: {
-        deletedAt: null,
-        ...(siteId ? { siteId } : {}),
-      },
-      include: {
-        site: true,
-        floors: true,
-      },
-      orderBy: { name: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto, siteId?: number) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(siteId ? { siteId } : {}),
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.building.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          site: true,
+          floors: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.prismaCore.building.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

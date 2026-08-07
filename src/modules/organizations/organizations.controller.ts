@@ -21,6 +21,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
 @ApiTags('Organizations')
 @ApiBearerAuth()
 @Controller('organizations')
@@ -30,13 +32,10 @@ export class OrganizationsController {
 
   @Get()
   @RequirePermissions('organizations:view')
-  @ApiOperation({ summary: 'Get all organizations' })
-  @ApiResponse({
-    status: 200,
-    description: 'Return all organizations with settings and addresses.',
-  })
-  async findAll() {
-    return this.organizationsService.findAll();
+  @ApiOperation({ summary: 'Get all active organizations with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated list of organizations.' })
+  async findAll(@Query() paginationDto: PaginationQueryDto) {
+    return this.organizationsService.findAll(paginationDto);
   }
 
   @Throttle({ default: { limit: 15, ttl: 60000 } })

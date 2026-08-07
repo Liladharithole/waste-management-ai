@@ -1,0 +1,21 @@
+import { PaginatedResponse } from '../interfaces/paginated-response.interface';
+
+export function createPaginatedResponse<T>(
+  data: T[],
+  total: number,
+  page: number,
+  limit: number,
+): PaginatedResponse<T> {
+  const totalPages = Math.ceil(total / limit) || 1;
+  return {
+    data,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    },
+  };
+}

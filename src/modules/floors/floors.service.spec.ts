@@ -18,7 +18,7 @@ describe('FloorsService', () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
-    flat: {
+    unit: {
       count: jest.fn(),
     },
   };
@@ -35,13 +35,15 @@ describe('FloorsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all floors', async () => {
+    it('should return paginated floors', async () => {
       const mockList = [{ id: 1, floorNumber: 3, name: '3rd Floor' }];
       prisma.floor.findMany.mockResolvedValue(mockList);
+      prisma.floor.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 
@@ -102,9 +104,9 @@ describe('FloorsService', () => {
   });
 
   describe('delete', () => {
-    it('should delete floor if no flats linked', async () => {
+    it('should delete floor if no units linked', async () => {
       prisma.floor.findUnique.mockResolvedValue({ id: 10, floorNumber: 3 });
-      prisma.flat.count.mockResolvedValue(0);
+      prisma.unit.count.mockResolvedValue(0);
       prisma.floor.delete.mockResolvedValue({ id: 10 });
 
       const result = await service.delete(10);
@@ -112,9 +114,9 @@ describe('FloorsService', () => {
       expect(result).toHaveProperty('id', 10);
     });
 
-    it('should throw ConflictException if flats are linked', async () => {
+    it('should throw ConflictException if units are linked', async () => {
       prisma.floor.findUnique.mockResolvedValue({ id: 10, floorNumber: 3 });
-      prisma.flat.count.mockResolvedValue(4);
+      prisma.unit.count.mockResolvedValue(4);
 
       await expect(service.delete(10)).rejects.toThrow(ConflictException);
     });

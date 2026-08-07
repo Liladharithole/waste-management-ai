@@ -159,26 +159,26 @@ export const PERMISSIONS: PermissionDefinition[] = [
     description: 'Can soft-delete floors',
   },
 
-  // flats
+  // units
   {
     uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be029',
-    name: 'flats:view',
-    description: 'Can view flats',
+    name: 'units:view',
+    description: 'Can view units',
   },
   {
     uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be030',
-    name: 'flats:create',
-    description: 'Can register new flats',
+    name: 'units:create',
+    description: 'Can register new units',
   },
   {
     uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be031',
-    name: 'flats:update',
-    description: 'Can update flat information',
+    name: 'units:update',
+    description: 'Can update unit information',
   },
   {
     uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be032',
-    name: 'flats:delete',
-    description: 'Can soft-delete flats',
+    name: 'units:delete',
+    description: 'Can soft-delete units',
   },
 
   // residents

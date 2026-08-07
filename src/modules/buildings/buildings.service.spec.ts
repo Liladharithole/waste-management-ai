@@ -35,13 +35,15 @@ describe('BuildingsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all buildings', async () => {
+    it('should return paginated buildings', async () => {
       const mockList = [{ id: 1, name: 'Tower A' }];
       prisma.building.findMany.mockResolvedValue(mockList);
+      prisma.building.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 

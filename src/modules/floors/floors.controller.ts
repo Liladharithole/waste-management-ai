@@ -18,6 +18,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
 @ApiTags('Floors')
 @ApiBearerAuth()
 @Controller('floors')
@@ -27,11 +29,14 @@ export class FloorsController {
 
   @Get()
   @RequirePermissions('sites:view', 'organizations:view')
-  @ApiOperation({ summary: 'Get all active floors' })
-  @ApiResponse({ status: 200, description: 'Return all floors.' })
-  async findAll(@Query('buildingId') buildingId?: string) {
+  @ApiOperation({ summary: 'Get all active floors with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated floors.' })
+  async findAll(
+    @Query() paginationDto: PaginationQueryDto,
+    @Query('buildingId') buildingId?: string,
+  ) {
     const parsedBuildingId = buildingId ? parseInt(buildingId, 10) : undefined;
-    return this.floorsService.findAll(parsedBuildingId);
+    return this.floorsService.findAll(paginationDto, parsedBuildingId);
   }
 
   @Get(':id')
@@ -66,7 +71,7 @@ export class FloorsController {
   @ApiOperation({ summary: 'Delete a floor' })
   @ApiResponse({ status: 200, description: 'Floor successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Not Found: Floor not found.' })
-  @ApiResponse({ status: 409, description: 'Conflict: Floor contains active flat dependencies.' })
+  @ApiResponse({ status: 409, description: 'Conflict: Floor contains active unit dependencies.' })
   async delete(@Param('id', ParseIntPipe) id: number) {
     return this.floorsService.delete(id);
   }

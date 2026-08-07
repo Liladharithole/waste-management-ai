@@ -331,18 +331,18 @@ model Floor {
   deletedBy   String?  @map("deleted_by")
 
   // Relations
-  flats       Flat[]
+  units       Unit[]
 
   @@index([buildingId])
   @@map("floors")
 }
 
-model Flat {
+model Unit {
   id         Int       @id @default(autoincrement())
   uuid       String    @unique @default(uuid()) @map("uuid")
   floorId    Int       @map("floor_id")
   floor      Floor     @relation(fields: [floorId], references: [id], onDelete: Cascade)
-  flatNumber String    @map("flat_number")
+  unitNumber String    @map("unit_number")
   
   // Audit columns
   createdAt  DateTime  @default(now()) @map("created_at")
@@ -356,7 +356,7 @@ model Flat {
   residents  Resident[]
 
   @@index([floorId])
-  @@map("flats")
+  @@map("units")
 }
 
 model Resident {
@@ -366,8 +366,8 @@ model Resident {
   userId    Int       @unique @map("user_id")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  flatId    Int       @map("flat_id")
-  flat      Flat      @relation(fields: [flatId], references: [id], onDelete: Restrict)
+  unitId    Int       @map("unit_id")
+  unit      Unit      @relation(fields: [unitId], references: [id], onDelete: Restrict)
 
   // Audit columns
   createdAt DateTime  @default(now()) @map("created_at")
@@ -377,7 +377,7 @@ model Resident {
   deletedAt DateTime? @map("deleted_at")
   deletedBy String?   @map("deleted_by")
 
-  @@index([flatId])
+  @@index([unitId])
   @@map("residents")
 }
 

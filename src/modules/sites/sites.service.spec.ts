@@ -46,14 +46,15 @@ describe('SitesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all sites', async () => {
-      const mockList = [{ id: 1, name: 'Site A' }];
+    it('should return paginated sites', async () => {
+      const mockList = [{ id: 1, name: 'Green Valley' }];
       prisma.site.findMany.mockResolvedValue(mockList);
+      prisma.site.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
-      expect(prisma.site.findMany).toHaveBeenCalled();
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 

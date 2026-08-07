@@ -60,10 +60,10 @@ async function seedPermissions(): Promise<void> {
   console.log('🔒 Seeding permissions...');
   for (const perm of PERMISSIONS) {
     const upserted = await prisma.permission.upsert({
-      where: { name: perm.name },
+      where: { uuid: perm.uuid },
       update: {
+        name: perm.name,
         description: perm.description,
-        uuid: perm.uuid, // Keep uuid consistent
       },
       create: {
         uuid: perm.uuid,

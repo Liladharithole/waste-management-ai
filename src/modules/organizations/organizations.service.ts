@@ -6,6 +6,9 @@ import { AddAddressDto } from './dto/add-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { GoogleMapsService } from '../google-maps/google-maps.service';
 
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
 @Injectable()
 export class OrganizationsService {
   constructor(
@@ -14,17 +17,32 @@ export class OrganizationsService {
   ) {}
 
   /**
-   * Retrieves all organizations, including their settings and addresses.
+   * Retrieves all active organizations with pagination.
    */
-  async findAll() {
-    return await this.prismaCore.organization.findMany({
-      where: { deletedAt: null },
-      include: {
-        settings: true,
-        addresses: true,
-      },
-      orderBy: { name: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.organization.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          settings: true,
+          addresses: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.prismaCore.organization.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

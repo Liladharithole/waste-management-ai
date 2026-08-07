@@ -3,6 +3,8 @@ import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-centr
 import { CreateSiteDto } from './dto/create-site.dto';
 import { UpdateSiteDto } from './dto/update-site.dto';
 import { GoogleMapsService } from '../google-maps/google-maps.service';
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class SitesService {
@@ -12,20 +14,33 @@ export class SitesService {
   ) {}
 
   /**
-   * Retrieves all active sites, optionally filtered by organization ID.
+   * Retrieves all active sites with pagination.
    */
-  async findAll(organizationId?: number) {
-    return await this.prismaCore.site.findMany({
-      where: {
-        deletedAt: null,
-        ...(organizationId ? { organizationId } : {}),
-      },
-      include: {
-        organization: true,
-        buildings: true,
-      },
-      orderBy: { name: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto, organizationId?: number) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(organizationId ? { organizationId } : {}),
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.site.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          organization: true,
+          buildings: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      this.prismaCore.site.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

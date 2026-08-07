@@ -19,6 +19,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
+
 @ApiTags('Sites')
 @ApiBearerAuth()
 @Controller('sites')
@@ -28,11 +30,14 @@ export class SitesController {
 
   @Get()
   @RequirePermissions('sites:view', 'organizations:view')
-  @ApiOperation({ summary: 'Get all active sites' })
-  @ApiResponse({ status: 200, description: 'Return all sites.' })
-  async findAll(@Query('organizationId') organizationId?: string) {
+  @ApiOperation({ summary: 'Get all active residential sites with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated residential sites.' })
+  async findAll(
+    @Query() paginationDto: PaginationQueryDto,
+    @Query('organizationId') organizationId?: string,
+  ) {
     const orgId = organizationId ? parseInt(organizationId, 10) : undefined;
-    return this.sitesService.findAll(orgId);
+    return this.sitesService.findAll(paginationDto, orgId);
   }
 
   @Throttle({ default: { limit: 15, ttl: 60000 } })

@@ -72,7 +72,7 @@ Use `central_core_db` for identity and platform hierarchy:
 - Users, profiles, addresses, refresh tokens, notifications.
 - Roles, permissions, user-role mappings, role-permission mappings.
 - Organizations, settings, organization addresses.
-- Sites, buildings, floors, flats, residents, employees.
+- Sites, buildings, floors, units, residents, employees.
 
 Use `waste_management` for waste-operation data:
 

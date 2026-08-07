@@ -2,26 +2,41 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
 import { CreateFloorDto } from './dto/create-floor.dto';
 import { UpdateFloorDto } from './dto/update-floor.dto';
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class FloorsService {
   constructor(private readonly prismaCore: PrismaCentralCoreService) {}
 
   /**
-   * Retrieves all active floors, optionally filtered by building ID.
+   * Retrieves all active floors with pagination.
    */
-  async findAll(buildingId?: number) {
-    return await this.prismaCore.floor.findMany({
-      where: {
-        deletedAt: null,
-        ...(buildingId ? { buildingId } : {}),
-      },
-      include: {
-        building: true,
-        flats: true,
-      },
-      orderBy: { floorNumber: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto, buildingId?: number) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(buildingId ? { buildingId } : {}),
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.floor.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          building: true,
+          units: true,
+        },
+        orderBy: { floorNumber: 'asc' },
+      }),
+      this.prismaCore.floor.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**
@@ -32,7 +47,7 @@ export class FloorsService {
       where: { id },
       include: {
         building: true,
-        flats: true,
+        units: true,
       },
     });
     if (!floor || floor.deletedAt) {
@@ -69,17 +84,17 @@ export class FloorsService {
   }
 
   /**
-   * Deletes a floor after checking active flat dependencies.
+   * Deletes a floor after checking active unit dependencies.
    */
   async delete(id: number) {
     await this.findOne(id);
 
-    const flatCount = await this.prismaCore.flat.count({
+    const unitCount = await this.prismaCore.unit.count({
       where: { floorId: id },
     });
-    if (flatCount > 0) {
+    if (unitCount > 0) {
       throw new ConflictException(
-        `Cannot delete floor because it currently contains ${flatCount} flat(s). Please remove or reassign these flats first.`,
+        `Cannot delete floor because it currently contains ${unitCount} unit(s). Please remove or reassign these units first.`,
       );
     }
 

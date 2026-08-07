@@ -222,7 +222,7 @@ Use `central_core_db` for:
 - Users, profiles, addresses, sessions, and notifications.
 - Roles, permissions, user-role mappings, and role-permission mappings.
 - Organizations, organization settings, organization addresses.
-- Sites, buildings, floors, flats, residents, and employees.
+- Sites, buildings, floors, units, residents, and employees.
 
 Use `waste_management` for:
 
