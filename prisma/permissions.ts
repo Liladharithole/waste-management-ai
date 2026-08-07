@@ -348,4 +348,53 @@ export const PERMISSIONS: PermissionDefinition[] = [
     name: 'schedules:delete',
     description: 'Can soft-delete pickup schedules',
   },
+
+  // tariffs
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be063',
+    name: 'tariffs:view',
+    description: 'Can view waste tariff configurations',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be064',
+    name: 'tariffs:create',
+    description: 'Can create waste tariff configurations',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be065',
+    name: 'tariffs:update',
+    description: 'Can update waste tariff configurations',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be066',
+    name: 'tariffs:delete',
+    description: 'Can soft-delete waste tariff configurations',
+  },
+
+  // invoices
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be067',
+    name: 'invoices:view',
+    description: 'Can view invoices',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be068',
+    name: 'invoices:create',
+    description: 'Can generate draft invoices (Maker)',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be069',
+    name: 'invoices:approve',
+    description: 'Can approve or reject draft invoices (Checker)',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be070',
+    name: 'invoices:update',
+    description: 'Can update invoice details and record payments',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be071',
+    name: 'invoices:delete',
+    description: 'Can soft-delete invoices',
+  },
 ];

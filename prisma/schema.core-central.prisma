@@ -472,3 +472,38 @@ model RolePermission {
   @@index([permissionId])
   @@map("role_permissions")
 }
+
+enum CronStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL_SUCCESS
+}
+
+model CronJobLog {
+  id                  Int        @id @default(autoincrement())
+  uuid                String     @unique @default(uuid()) @map("uuid")
+  cronName            String     @map("cron_name")
+  status              CronStatus @default(RUNNING) @map("status")
+  
+  startedAt           DateTime   @default(now()) @map("started_at")
+  completedAt         DateTime?  @map("completed_at")
+  executionDurationMs Int?       @map("execution_duration_ms")
+  
+  itemsProcessedCount Int        @default(0) @map("items_processed_count")
+  errorCount          Int        @default(0) @map("error_count")
+  details             String?    @db.Text @map("details")
+  errorLog            String?    @db.Text @map("error_log")
+  
+  triggeredBy         String     @default("SYSTEM_TIMER") @map("triggered_by")
+  notificationSent    Boolean    @default(false) @map("notification_sent")
+
+  // Audit columns
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @updatedAt @map("updated_at")
+
+  @@index([cronName])
+  @@index([status])
+  @@index([startedAt])
+  @@map("cron_job_logs")
+}

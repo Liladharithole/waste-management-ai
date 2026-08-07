@@ -23,6 +23,8 @@ model WasteCategory {
   // Relations
   collections WasteCollection[]
   schedules   WasteSchedule[]
+  tariffs     WasteTariff[]
+  invoiceItems WasteInvoiceItem[]
 
   @@map("waste_categories")
 }
@@ -148,4 +150,123 @@ model WasteSchedule {
   @@index([wasteCategoryId])
   @@index([isActive])
   @@map("waste_schedules")
+}
+
+enum BillingFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+model WasteTariff {
+  id                 Int              @id @default(autoincrement())
+  uuid               String           @unique @default(uuid()) @map("uuid")
+  name               String           @map("name") // e.g. "Green Valley Tariff 2026"
+  
+  // Site or Organization links (Cross-DB)
+  siteId             Int?             @map("site_id")
+  organizationId     Int?             @map("organization_id")
+  
+  wasteCategoryId    Int              @map("waste_category_id")
+  wasteCategory      WasteCategory    @relation(fields: [wasteCategoryId], references: [id], onDelete: Restrict)
+  
+  ratePerKg          Float            @default(0.0) @map("rate_per_kg")
+  baseMonthlyFee     Float            @default(0.0) @map("base_monthly_fee")
+  penaltyRatePerKg   Float            @default(0.0) @map("penalty_rate_per_kg")
+  minimumBillAmount  Float            @default(0.0) @map("minimum_bill_amount")
+  isCreditTariff     Boolean          @default(false) @map("is_credit_tariff")
+  billingFrequency   BillingFrequency @default(MONTHLY) @map("billing_frequency")
+  isActive           Boolean          @default(true) @map("is_active")
+
+  // Audit columns
+  createdAt          DateTime         @default(now()) @map("created_at")
+  createdBy          String?          @map("created_by")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  updatedBy          String?          @map("updated_by")
+  deletedAt          DateTime?        @map("deleted_at")
+  deletedBy          String?          @map("deleted_by")
+
+  @@index([siteId])
+  @@index([organizationId])
+  @@index([wasteCategoryId])
+  @@map("waste_tariffs")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  OVERDUE
+  REJECTED_DRAFT
+  CANCELLED
+}
+
+enum PayerType {
+  UNIT
+  SITE
+  ORGANIZATION
+}
+
+model WasteInvoice {
+  id                 Int                @id @default(autoincrement())
+  uuid               String             @unique @default(uuid()) @map("uuid")
+  invoiceNumber      String             @unique @map("invoice_number")
+  
+  payerType          PayerType          @map("payer_type")
+  siteId             Int?               @map("site_id")
+  unitId             Int?               @map("unit_id")
+  organizationId     Int?               @map("organization_id")
+  residentUserId     Int?               @map("resident_user_id")
+
+  billingMonth       String             @map("billing_month") // e.g., "2026-08" or "2026-W32" or "2026-08-08"
+  subtotalAmount     Float              @map("subtotal_amount")
+  taxAmount          Float              @default(0.0) @map("tax_amount")
+  totalAmount        Float              @map("total_amount")
+  
+  status             InvoiceStatus      @default(DRAFT) @map("status")
+  dueDate            DateTime           @map("due_date")
+  
+  // Maker-Checker Audit fields
+  approvedBy         String?            @map("approved_by")
+  approvedAt         DateTime?          @map("approved_at")
+  rejectionReason    String?            @map("rejection_reason")
+  
+  // Payment audit fields
+  paymentMethod      String?            @map("payment_method")
+  transactionRef     String?            @map("transaction_ref")
+  paidAt             DateTime?          @map("paid_at")
+
+  items              WasteInvoiceItem[]
+
+  // Audit columns
+  createdAt          DateTime           @default(now()) @map("created_at")
+  createdBy          String?            @map("created_by")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  updatedBy          String?            @map("updated_by")
+  deletedAt          DateTime?          @map("deleted_at")
+  deletedBy          String?            @map("deleted_by")
+
+  @@index([siteId])
+  @@index([unitId])
+  @@index([organizationId])
+  @@index([status])
+  @@map("waste_invoices")
+}
+
+model WasteInvoiceItem {
+  id                 Int            @id @default(autoincrement())
+  invoiceId          Int            @map("invoice_id")
+  invoice            WasteInvoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  wasteCategoryId    Int            @map("waste_category_id")
+  wasteCategory      WasteCategory  @relation(fields: [wasteCategoryId], references: [id], onDelete: Restrict)
+  wasteCategoryName  String         @map("waste_category_name")
+  totalWeightKg      Float          @map("total_weight_kg")
+  ratePerKg          Float          @map("rate_per_kg")
+  lineTotal          Float          @map("line_total")
+  isCredit           Boolean        @default(false) @map("is_credit")
+
+  @@index([invoiceId])
+  @@index([wasteCategoryId])
+  @@map("waste_invoice_items")
 }

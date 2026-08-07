@@ -20,17 +20,21 @@ import { FloorsModule } from './modules/floors/floors.module';
 import { UnitsModule } from './modules/units/units.module';
 import { ResidentsModule } from './modules/residents/residents.module';
 import { EmployeesModule } from './modules/employees/employees.module';
+import { ScheduleModule } from '@nestjs/schedule';
 import { WasteCategoriesModule } from './modules/waste-categories/waste-categories.module';
 import { WasteCollectionsModule } from './modules/waste-collections/waste-collections.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { CronsModule } from './modules/crons/crons.module';
 
 @Module({
   imports: [
     LoggerModule.forRoot({
       pinoHttp: createPinoHttpOptions(),
     }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([
       {
         name: 'default',
@@ -68,6 +72,8 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
     ComplaintsModule,
     ReportsModule,
     SchedulesModule,
+    BillingModule,
+    CronsModule,
   ],
   controllers: [AppController],
   providers: [
