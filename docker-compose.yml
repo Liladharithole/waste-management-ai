@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     container_name: waste-management-api
     restart: always
-    command: npm run start:dev
+    command: sh -c "npx prisma generate --config prisma.config.ts && npx prisma generate --config prisma-central-core.config.ts && npm run start:dev"
     env_file:
       - .env
     environment:
@@ -39,6 +39,9 @@ services:
       - '${PORT:-7001}:${PORT:-7001}'
     volumes:
       - ./src:/usr/src/app/src
+      - ./prisma:/usr/src/app/prisma
+      - ./prisma.config.ts:/usr/src/app/prisma.config.ts
+      - ./prisma-central-core.config.ts:/usr/src/app/prisma-central-core.config.ts
       - ./package.json:/usr/src/app/package.json
       - ./tsconfig.json:/usr/src/app/tsconfig.json
       - ./tsconfig.build.json:/usr/src/app/tsconfig.build.json
