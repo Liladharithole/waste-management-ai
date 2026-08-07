@@ -406,29 +406,90 @@ model Resident {
   @@map("residents")
 }
 
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+}
+
+enum DutyStatus {
+  AVAILABLE
+  ON_DUTY
+  OFF_DUTY
+  ON_LEAVE
+}
+
+enum ComplianceEntityType {
+  VEHICLE
+  EMPLOYEE
+}
+
+enum ComplianceDocStatus {
+  VALID
+  EXPIRED
+  PENDING_RENEWAL
+}
+
 model Employee {
-  id             Int          @id @default(autoincrement())
-  uuid           String       @unique @default(uuid()) @map("uuid")
+  id               Int              @id @default(autoincrement())
+  uuid             String           @unique @default(uuid()) @map("uuid")
   
-  userId         Int          @unique @map("user_id")
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           Int              @unique @map("user_id")
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  organizationId Int          @map("organization_id")
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId   Int              @map("organization_id")
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   
-  employeeCode   String?      @unique @map("employee_code")
-  designation    String?      @map("designation")
+  employeeCode     String?          @unique @map("employee_code")
+  designation      String?          @map("designation")
+
+  complianceStatus ComplianceStatus @default(COMPLIANT) @map("compliance_status")
+  dutyStatus       DutyStatus       @default(AVAILABLE) @map("duty_status")
 
   // Audit columns
-  createdAt      DateTime     @default(now()) @map("created_at")
-  createdBy      String?      @map("created_by")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
-  updatedBy      String?      @map("updated_by")
-  deletedAt      DateTime?    @map("deleted_at")
-  deletedBy      String?      @map("deleted_by")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  createdBy        String?          @map("created_by")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  updatedBy        String?          @map("updated_by")
+  deletedAt        DateTime?        @map("deleted_at")
+  deletedBy        String?          @map("deleted_by")
 
   @@index([organizationId])
+  @@index([complianceStatus])
+  @@index([dutyStatus])
   @@map("employees")
+}
+
+model ComplianceDocument {
+  id               Int                  @id @default(autoincrement())
+  uuid             String               @unique @default(uuid()) @map("uuid")
+  organizationId   Int                  @map("organization_id")
+  
+  entityType       ComplianceEntityType @map("entity_type")
+  entityId         Int                  @map("entity_id")
+  
+  documentType     String               @map("document_type")
+  documentNumber   String?              @map("document_number")
+  documentUrl      String?              @map("document_url")
+  
+  issueDate        DateTime?            @db.Date @map("issue_date")
+  expiryDate       DateTime             @db.Date @map("expiry_date")
+  status           ComplianceDocStatus  @default(VALID) @map("status")
+  isVerified       Boolean              @default(false) @map("is_verified")
+
+  // Audit columns
+  createdAt        DateTime             @default(now()) @map("created_at")
+  createdBy        String?              @map("created_by")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  updatedBy        String?              @map("updated_by")
+  deletedAt        DateTime?            @map("deleted_at")
+  deletedBy        String?              @map("deleted_by")
+
+  @@index([organizationId])
+  @@index([entityType, entityId])
+  @@index([documentType])
+  @@index([expiryDate])
+  @@index([status])
+  @@map("compliance_documents")
 }
 
 model Permission {

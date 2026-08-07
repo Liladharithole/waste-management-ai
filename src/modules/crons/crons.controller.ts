@@ -2,6 +2,8 @@ import { Controller, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@n
 import { ApiBearerAuth, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BillingCronService } from './services/billing-cron.service';
 import { OverdueInvoicesCronService } from './services/overdue-invoices-cron.service';
+import { ComplianceCronService } from './services/compliance-cron.service';
+import { EscalationCronService } from './services/escalation-cron.service';
 import { CronAuditService } from './services/cron-audit.service';
 import { CronSecretGuard } from './guards/cron-secret.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,6 +17,8 @@ export class CronsController {
   constructor(
     private readonly billingCronService: BillingCronService,
     private readonly overdueInvoicesCronService: OverdueInvoicesCronService,
+    private readonly complianceCronService: ComplianceCronService,
+    private readonly escalationCronService: EscalationCronService,
     private readonly cronAuditService: CronAuditService,
   ) {}
 
@@ -90,6 +94,44 @@ export class CronsController {
     return {
       success: true,
       message: 'Overdue invoices cron executed successfully.',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('trigger/compliance-check')
+  @UseGuards(CronSecretGuard)
+  @ApiHeader({
+    name: 'X-CRON-SECRET',
+    description: 'Secret API key for cron execution',
+    required: true,
+  })
+  @ApiOperation({ summary: 'Manually trigger compliance expiry check cron job' })
+  @ApiResponse({ status: 200, description: 'Compliance check cron executed.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized: Invalid X-CRON-SECRET header.' })
+  async triggerComplianceCheck() {
+    await this.complianceCronService.handleComplianceExpiryCron('HTTP_WEBHOOK');
+    return {
+      success: true,
+      message: 'Compliance check cron executed successfully.',
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Post('trigger/complaint-escalation')
+  @UseGuards(CronSecretGuard)
+  @ApiHeader({
+    name: 'X-CRON-SECRET',
+    description: 'Secret API key for cron execution',
+    required: true,
+  })
+  @ApiOperation({ summary: 'Manually trigger complaint priority escalation cron job' })
+  @ApiResponse({ status: 200, description: 'Complaint escalation cron executed.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized: Invalid X-CRON-SECRET header.' })
+  async triggerComplaintEscalation() {
+    await this.escalationCronService.handleComplaintEscalationCron('HTTP_WEBHOOK');
+    return {
+      success: true,
+      message: 'Complaint escalation cron executed successfully.',
       timestamp: new Date().toISOString(),
     };
   }

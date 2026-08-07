@@ -285,6 +285,8 @@ Refer to the specialized guides in [`/docs`](file://./docs) for specific standar
 - 🪺 **[NestJS & Dual-Prisma Rules](file://./docs/nestjs-rules.md)**: NestJS 11 best practices, module isolation, dual database client rules (`waste_management` & `central_core_db`).
 - 🗄️ **[Database & Migration Rules](file://./docs/database.md)**: Schema evolution, index strategies, transaction safety.
 - 🕒 **[Timezone Handling & Localization](file://./docs/timezone-handling.md)**: UTC storage, timezone conversions, and ISO 8601 formatting rules.
+- 📡 **[Frontend Live GIS WebSocket Guide](file://./docs/frontend-gis-websocket-guide.md)**: Contract specification for frontend WebSocket integration (JWT handshake, location update payloads, React Google Maps rendering).
+- 📘 **[Master API Integration Guide](file://./docs/master-api-integration-guide.md)**: Production-ready API sitemap, JSON schemas, Driver App workflows, Admin Web Portal contracts, and Partner Vendor API Key specifications.
 - ✅ **[Review & PR Quality Gates](file://./docs/review-checklist.md)**: Pre-commit checklists, quality gates, final review verification.
 
 ---

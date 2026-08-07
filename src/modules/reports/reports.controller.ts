@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { WasteSummaryQueryDto } from './dto/waste-summary-query.dto';
@@ -37,5 +37,23 @@ export class ReportsController {
   @ApiResponse({ status: 200, description: 'Return worker performance ranking.' })
   async getWorkerLeaderboard(@Query() query: LeaderboardQueryDto) {
     return this.reportsService.getWorkerLeaderboard(query);
+  }
+
+  @Get('export/waste-collections.csv')
+  @RequirePermissions('reports:view')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="waste-collections.csv"')
+  @ApiOperation({ summary: 'Export waste collection records in CSV format' })
+  async exportWasteCollectionsCsv() {
+    return this.reportsService.exportWasteCollectionsCsv();
+  }
+
+  @Get('export/invoices.csv')
+  @RequirePermissions('reports:view')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="invoices-ledger.csv"')
+  @ApiOperation({ summary: 'Export invoices ledger records in CSV format' })
+  async exportInvoicesCsv() {
+    return this.reportsService.exportInvoicesCsv();
   }
 }

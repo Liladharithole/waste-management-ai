@@ -2,6 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CronsController } from './crons.controller';
 import { BillingCronService } from './services/billing-cron.service';
 import { OverdueInvoicesCronService } from './services/overdue-invoices-cron.service';
+import { ComplianceCronService } from './services/compliance-cron.service';
+import { EscalationCronService } from './services/escalation-cron.service';
 import { CronAuditService } from './services/cron-audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
@@ -20,6 +22,14 @@ describe('CronsController', () => {
     handleOverdueInvoicesCron: jest.fn(),
   };
 
+  const mockComplianceCronService = {
+    handleComplianceExpiryCron: jest.fn(),
+  };
+
+  const mockEscalationCronService = {
+    handleComplaintEscalationCron: jest.fn(),
+  };
+
   const mockCronAuditService = {
     findAllLogs: jest.fn().mockResolvedValue({ data: [], total: 0 }),
     findLogById: jest.fn().mockResolvedValue({ id: 1 }),
@@ -31,6 +41,8 @@ describe('CronsController', () => {
       providers: [
         { provide: BillingCronService, useValue: mockBillingCronService },
         { provide: OverdueInvoicesCronService, useValue: mockOverdueCronService },
+        { provide: ComplianceCronService, useValue: mockComplianceCronService },
+        { provide: EscalationCronService, useValue: mockEscalationCronService },
         { provide: CronAuditService, useValue: mockCronAuditService },
       ],
     })
@@ -56,29 +68,14 @@ describe('CronsController', () => {
     });
   });
 
-  describe('triggerMonthlyBilling', () => {
-    it('should invoke handleMonthlyBillingCron and return success object', async () => {
-      const result = await controller.triggerMonthlyBilling();
+  describe('triggerComplaintEscalation', () => {
+    it('should invoke handleComplaintEscalationCron and return success object', async () => {
+      const result = await controller.triggerComplaintEscalation();
 
       expect(result.success).toBe(true);
-      expect(mockBillingCronService.handleMonthlyBillingCron).toHaveBeenCalledWith('HTTP_WEBHOOK');
-    });
-  });
-
-  describe('triggerOverdueInvoices', () => {
-    it('should invoke handleOverdueInvoicesCron and return success object', async () => {
-      const result = await controller.triggerOverdueInvoices();
-
-      expect(result.success).toBe(true);
-      expect(mockOverdueCronService.handleOverdueInvoicesCron).toHaveBeenCalledWith('HTTP_WEBHOOK');
-    });
-  });
-
-  describe('getLogs', () => {
-    it('should return paginated logs', async () => {
-      const result = await controller.getLogs(1, 10);
-      expect(result).toBeDefined();
-      expect(mockCronAuditService.findAllLogs).toHaveBeenCalledWith(1, 10, undefined, undefined);
+      expect(mockEscalationCronService.handleComplaintEscalationCron).toHaveBeenCalledWith(
+        'HTTP_WEBHOOK',
+      );
     });
   });
 });

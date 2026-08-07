@@ -397,4 +397,75 @@ export const PERMISSIONS: PermissionDefinition[] = [
     name: 'invoices:delete',
     description: 'Can soft-delete invoices',
   },
+
+  // compliance
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be072',
+    name: 'compliance:view',
+    description: 'Can view compliance documents and expiry records',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be073',
+    name: 'compliance:create',
+    description: 'Can upload and register compliance documents',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be074',
+    name: 'compliance:update',
+    description: 'Can update and verify compliance documents',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be075',
+    name: 'compliance:delete',
+    description: 'Can soft-delete compliance documents',
+  },
+
+  // vehicles
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be076',
+    name: 'vehicles:view',
+    description: 'Can view fleet vehicles and compliance statuses',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be077',
+    name: 'vehicles:create',
+    description: 'Can register new fleet vehicles',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be078',
+    name: 'vehicles:update',
+    description: 'Can update fleet vehicle details and status',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be079',
+    name: 'vehicles:delete',
+    description: 'Can soft-delete fleet vehicles',
+  },
+
+  // dispatches
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be080',
+    name: 'dispatches:view',
+    description: 'Can view shift dispatches and route stop logs',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be081',
+    name: 'dispatches:create',
+    description: 'Can schedule daily shift dispatches',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be082',
+    name: 'dispatches:update',
+    description: 'Can update shift dispatch status and record stops',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be083',
+    name: 'dispatches:delete',
+    description: 'Can soft-delete shift dispatches',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be084',
+    name: 'dispatches:assign',
+    description: 'Can assign drivers and vehicles to dispatches',
+  },
 ];

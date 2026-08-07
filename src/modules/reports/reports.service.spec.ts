@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsService } from './reports.service';
 import { ReportsRepository } from './repositories/reports.repository';
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { ComplaintPriority, ComplaintStatus } from '@prisma/client';
 
 describe('ReportsService', () => {
@@ -23,12 +24,22 @@ describe('ReportsService', () => {
     },
   };
 
+  const mockPrismaMain = {
+    wasteCollection: {
+      findMany: jest.fn(),
+    },
+    wasteInvoice: {
+      findMany: jest.fn(),
+    },
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReportsService,
         { provide: ReportsRepository, useValue: mockRepository },
         { provide: PrismaCentralCoreService, useValue: mockPrismaCore },
+        { provide: PrismaService, useValue: mockPrismaMain },
       ],
     }).compile();
 

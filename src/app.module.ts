@@ -28,6 +28,16 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { SchedulesModule } from './modules/schedules/schedules.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { CronsModule } from './modules/crons/crons.module';
+import { ComplianceModule } from './modules/compliance/compliance.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { DispatchesModule } from './modules/dispatches/dispatches.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { GisModule } from './modules/gis/gis.module';
+import { ResidentPortalModule } from './modules/resident-portal/resident-portal.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { DriverAppModule } from './modules/driver-app/driver-app.module';
+import { VendorApiModule } from './modules/vendor-api/vendor-api.module';
 
 @Module({
   imports: [
@@ -74,6 +84,16 @@ import { CronsModule } from './modules/crons/crons.module';
     SchedulesModule,
     BillingModule,
     CronsModule,
+    ComplianceModule,
+    VehiclesModule,
+    DispatchesModule,
+    StorageModule,
+    DashboardModule,
+    GisModule,
+    ResidentPortalModule,
+    NotificationsModule,
+    DriverAppModule,
+    VendorApiModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ReportsRepository } from './repositories/reports.repository';
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { WasteSummaryQueryDto } from './dto/waste-summary-query.dto';
 import { SlaQueryDto } from './dto/sla-query.dto';
 import { LeaderboardQueryDto } from './dto/leaderboard-query.dto';
@@ -10,6 +11,7 @@ export class ReportsService {
   constructor(
     private readonly reportsRepository: ReportsRepository,
     private readonly prismaCore: PrismaCentralCoreService,
+    private readonly prismaMain: PrismaService,
   ) {}
 
   /**
@@ -247,5 +249,57 @@ export class ReportsService {
       .slice(0, limit);
 
     return { leaderboard: sortedWorkers };
+  }
+
+  /**
+   * Exports Waste Collections to CSV format.
+   */
+  async exportWasteCollectionsCsv(): Promise<string> {
+    const collections = await this.prismaMain.wasteCollection.findMany({
+      where: { deletedAt: null },
+      include: { wasteCategory: true },
+      orderBy: { collectionDate: 'desc' },
+      take: 500,
+    });
+
+    const headers = 'ID,UUID,Collector User ID,Category,Weight (kg),Collection Date\n';
+    const rows = collections.map((c) =>
+      [
+        c.id,
+        c.uuid,
+        c.collectorUserId,
+        `"${c.wasteCategory?.name || 'Uncategorized'}"`,
+        c.weight,
+        `"${c.collectionDate.toISOString()}"`,
+      ].join(','),
+    );
+
+    return headers + rows.join('\n');
+  }
+
+  /**
+   * Exports Invoices Ledger to CSV format.
+   */
+  async exportInvoicesCsv(): Promise<string> {
+    const invoices = await this.prismaMain.wasteInvoice.findMany({
+      where: { deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+
+    const headers = 'ID,Invoice Number,Billing Period,Total Amount,Status,Approved By,Paid At\n';
+    const rows = invoices.map((i) =>
+      [
+        i.id,
+        `"${i.invoiceNumber}"`,
+        `"${i.billingMonth}"`,
+        i.totalAmount,
+        i.status,
+        `"${i.approvedBy || ''}"`,
+        `"${i.paidAt ? i.paidAt.toISOString() : ''}"`,
+      ].join(','),
+    );
+
+    return headers + rows.join('\n');
   }
 }

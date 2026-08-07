@@ -144,6 +144,8 @@ model WasteSchedule {
   deletedAt          DateTime?         @map("deleted_at")
   deletedBy          String?           @map("deleted_by")
 
+  dispatches         DispatchAssignment[]
+
   @@index([siteId])
   @@index([buildingId])
   @@index([assignedEmployeeId])
@@ -269,4 +271,152 @@ model WasteInvoiceItem {
   @@index([invoiceId])
   @@index([wasteCategoryId])
   @@map("waste_invoice_items")
+}
+
+enum VehicleType {
+  COMPACTOR_TRUCK
+  TIPPER_TRUCK
+  MINI_VAN
+  ELECTRIC_AUTO
+  HOOK_LOADER
+}
+
+enum VehicleStatus {
+  ACTIVE
+  UNDER_MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+}
+
+enum DispatchStatus {
+  ASSIGNED
+  STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model WasteVehicle {
+  id                   Int               @id @default(autoincrement())
+  uuid                 String            @unique @default(uuid()) @map("uuid")
+  organizationId       Int               @map("organization_id")
+  
+  registrationNumber   String            @unique @map("registration_number")
+  vehicleType          VehicleType       @default(COMPACTOR_TRUCK) @map("vehicle_type")
+  capacityMetricTons   Float             @default(5.0) @map("capacity_metric_tons")
+  status               VehicleStatus     @default(ACTIVE) @map("status")
+  complianceStatus     ComplianceStatus  @default(COMPLIANT) @map("compliance_status")
+  fuelType             String?           @default("DIESEL") @map("fuel_type")
+  
+  // Audit columns
+  createdAt            DateTime          @default(now()) @map("created_at")
+  createdBy            String?           @map("created_by")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+  updatedBy            String?           @map("updated_by")
+  deletedAt            DateTime?         @map("deleted_at")
+  deletedBy            String?           @map("deleted_by")
+
+  dispatches           DispatchAssignment[]
+  locationLogs         VehicleLocationLog[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([complianceStatus])
+  @@map("waste_vehicles")
+}
+
+model DispatchAssignment {
+  id                   Int            @id @default(autoincrement())
+  uuid                 String         @unique @default(uuid()) @map("uuid")
+  
+  scheduleId           Int            @map("schedule_id")
+  schedule             WasteSchedule  @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+  
+  vehicleId            Int            @map("vehicle_id")
+  vehicle              WasteVehicle   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  
+  driverEmployeeId     Int            @map("driver_employee_id")
+  helperEmployeeId     Int?           @map("helper_employee_id")
+  
+  dispatchDate         DateTime       @db.Date @map("dispatch_date")
+  shiftName            String         @default("MORNING") @map("shift_name")
+  status               DispatchStatus @default(ASSIGNED) @map("status")
+  
+  startedAt            DateTime?      @map("started_at")
+  completedAt          DateTime?      @map("completed_at")
+  startOdometerKm      Float?         @map("start_odometer_km")
+  endOdometerKm        Float?         @map("end_odometer_km")
+  remarks              String?        @map("remarks")
+
+  // Audit columns
+  createdAt            DateTime       @default(now()) @map("created_at")
+  createdBy            String?        @map("created_by")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+  updatedBy            String?        @map("updated_by")
+  deletedAt            DateTime?      @map("deleted_at")
+  deletedBy            String?        @map("deleted_by")
+
+  stopLogs             DispatchStopLog[]
+  locationLogs         VehicleLocationLog[]
+
+  @@index([scheduleId])
+  @@index([vehicleId])
+  @@index([driverEmployeeId])
+  @@index([dispatchDate])
+  @@index([status])
+  @@map("dispatch_assignments")
+}
+
+model DispatchStopLog {
+  id                   Int                @id @default(autoincrement())
+  uuid                 String             @unique @default(uuid()) @map("uuid")
+  
+  dispatchId           Int                @map("dispatch_id")
+  dispatch             DispatchAssignment @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  
+  siteId               Int?               @map("site_id")
+  unitId               Int?               @map("unit_id")
+  
+  arrivalTime          DateTime           @default(now()) @map("arrival_time")
+  departureTime        DateTime?          @map("departure_time")
+  collectedWeightKg    Float              @default(0.0) @map("collected_weight_kg")
+  
+  latitude             Float?             @map("latitude")
+  longitude            Float?             @map("longitude")
+  status               String             @default("COMPLETED") @map("status")
+  skipReason           String?            @map("skip_reason")
+
+  // Audit columns
+  createdAt            DateTime           @default(now()) @map("created_at")
+  createdBy            String?            @map("created_by")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  updatedBy            String?            @map("updated_by")
+
+  @@index([dispatchId])
+  @@map("dispatch_stop_logs")
+}
+
+model VehicleLocationLog {
+  id                   BigInt             @id @default(autoincrement())
+  uuid                 String             @unique @default(uuid()) @map("uuid")
+  
+  dispatchId           Int                @map("dispatch_id")
+  dispatch             DispatchAssignment @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  
+  vehicleId            Int                @map("vehicle_id")
+  vehicle              WasteVehicle       @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  latitude             Float              @map("latitude")
+  longitude            Float              @map("longitude")
+  speedKmH             Float              @default(0.0) @map("speed_kmh")
+  heading              Float              @default(0.0) @map("heading")
+  recordedAt           DateTime           @default(now()) @map("recorded_at")
+
+  @@index([dispatchId, recordedAt])
+  @@index([vehicleId, recordedAt])
+  @@map("vehicle_location_logs")
 }
