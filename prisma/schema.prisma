@@ -22,6 +22,7 @@ model WasteCategory {
 
   // Relations
   collections WasteCollection[]
+  schedules   WasteSchedule[]
 
   @@map("waste_categories")
 }
@@ -106,4 +107,45 @@ model WasteComplaint {
   @@index([unitId])
   @@index([status])
   @@map("waste_complaints")
+}
+
+enum ScheduleFrequency {
+  DAILY
+  WEEKLY
+  CUSTOM_DAYS
+}
+
+model WasteSchedule {
+  id                 Int               @id @default(autoincrement())
+  uuid               String            @unique @default(uuid()) @map("uuid")
+  name               String            @map("name")
+  
+  // Cross-DB references to central_core_db (Site.id, Building.id, User.id)
+  siteId             Int               @map("site_id")
+  buildingId         Int?              @map("building_id")
+  assignedEmployeeId Int?              @map("assigned_employee_id")
+  
+  wasteCategoryId    Int               @map("waste_category_id")
+  wasteCategory      WasteCategory     @relation(fields: [wasteCategoryId], references: [id], onDelete: Restrict)
+  
+  frequency          ScheduleFrequency @default(CUSTOM_DAYS) @map("frequency")
+  daysOfWeek         Json              @map("days_of_week") // e.g. ["MONDAY", "WEDNESDAY", "FRIDAY"]
+  startTime          String            @map("start_time")   // e.g. "07:00"
+  endTime            String            @map("end_time")     // e.g. "09:00"
+  isActive           Boolean           @default(true) @map("is_active")
+
+  // Audit columns
+  createdAt          DateTime          @default(now()) @map("created_at")
+  createdBy          String?           @map("created_by")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+  updatedBy          String?           @map("updated_by")
+  deletedAt          DateTime?         @map("deleted_at")
+  deletedBy          String?           @map("deleted_by")
+
+  @@index([siteId])
+  @@index([buildingId])
+  @@index([assignedEmployeeId])
+  @@index([wasteCategoryId])
+  @@index([isActive])
+  @@map("waste_schedules")
 }

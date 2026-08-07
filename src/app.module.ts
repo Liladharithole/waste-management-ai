@@ -24,6 +24,7 @@ import { WasteCategoriesModule } from './modules/waste-categories/waste-categori
 import { WasteCollectionsModule } from './modules/waste-collections/waste-collections.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SchedulesModule } from './modules/schedules/schedules.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     WasteCollectionsModule,
     ComplaintsModule,
     ReportsModule,
+    SchedulesModule,
   ],
   controllers: [AppController],
   providers: [

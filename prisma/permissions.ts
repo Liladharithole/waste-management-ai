@@ -326,4 +326,26 @@ export const PERMISSIONS: PermissionDefinition[] = [
     name: 'reports:view',
     description: 'Can generate and view system reports',
   },
+
+  // schedules
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be059',
+    name: 'schedules:view',
+    description: 'Can view pickup schedules and checklists',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be060',
+    name: 'schedules:create',
+    description: 'Can create new pickup schedules',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be061',
+    name: 'schedules:update',
+    description: 'Can update pickup schedules',
+  },
+  {
+    uuid: 'd1a63c62-1d57-4148-be2d-94c6f96be062',
+    name: 'schedules:delete',
+    description: 'Can soft-delete pickup schedules',
+  },
 ];
