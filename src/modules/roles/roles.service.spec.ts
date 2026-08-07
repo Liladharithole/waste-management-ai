@@ -11,6 +11,7 @@ describe('RolesService', () => {
     role: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -38,19 +39,15 @@ describe('RolesService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all roles sorted by name', async () => {
-      const mockList = [
-        { id: 1, name: 'ADMIN' },
-        { id: 2, name: 'USER' },
-      ];
+    it('should return paginated roles', async () => {
+      const mockList = [{ id: 1, name: 'ADMIN' }];
       prisma.role.findMany.mockResolvedValue(mockList);
+      prisma.role.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
-      expect(prisma.role.findMany).toHaveBeenCalledWith({
-        orderBy: { name: 'asc' },
-      });
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 

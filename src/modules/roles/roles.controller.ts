@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -19,6 +20,7 @@ import { AssignRoleDto } from './dto/assign-role.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @ApiTags('Roles')
 @ApiBearerAuth()
@@ -29,10 +31,10 @@ export class RolesController {
 
   @Get()
   @RequirePermissions('roles:view')
-  @ApiOperation({ summary: 'Get all roles' })
-  @ApiResponse({ status: 200, description: 'Return all roles.' })
-  async findAll() {
-    return this.rolesService.findAll();
+  @ApiOperation({ summary: 'Get all system roles with pagination' })
+  @ApiResponse({ status: 200, description: 'Return paginated system roles.' })
+  async findAll(@Query() paginationDto: PaginationQueryDto) {
+    return this.rolesService.findAll(paginationDto);
   }
 
   @Post()

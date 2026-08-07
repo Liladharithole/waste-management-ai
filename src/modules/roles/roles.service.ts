@@ -3,18 +3,36 @@ import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-centr
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { AssignRoleDto } from './dto/assign-role.dto';
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class RolesService {
   constructor(private readonly prismaCore: PrismaCentralCoreService) {}
 
   /**
-   * Lists all roles in the system.
+   * Lists all roles in the system with pagination.
    */
-  async findAll() {
-    return await this.prismaCore.role.findMany({
-      orderBy: { name: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.role.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { name: 'asc' },
+      }),
+      this.prismaCore.role.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

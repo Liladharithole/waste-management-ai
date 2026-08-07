@@ -2,18 +2,36 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { PrismaCentralCoreService } from '../../prisma-central-core/prisma-central-core.service';
 import { CreatePermissionDto } from './dto/create-permission.dto';
 import { AssignPermissionDto } from './dto/assign-permission.dto';
+import { createPaginatedResponse } from '../../common/utils/pagination.util';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
 @Injectable()
 export class PermissionsService {
   constructor(private readonly prismaCore: PrismaCentralCoreService) {}
 
   /**
-   * Retrieves all permissions in the system.
+   * Retrieves all permissions in the system with pagination.
    */
-  async findAll() {
-    return await this.prismaCore.permission.findMany({
-      orderBy: { name: 'asc' },
-    });
+  async findAll(paginationDto: PaginationQueryDto) {
+    const { page = 1, limit = 10, search } = paginationDto;
+    const skip = (page - 1) * limit;
+
+    const whereClause: any = {
+      deletedAt: null,
+      ...(search ? { name: { contains: search } } : {}),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prismaCore.permission.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { name: 'asc' },
+      }),
+      this.prismaCore.permission.count({ where: whereClause }),
+    ]);
+
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   /**

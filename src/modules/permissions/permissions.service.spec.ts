@@ -11,6 +11,7 @@ describe('PermissionsService', () => {
     permission: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       delete: jest.fn(),
     },
@@ -37,19 +38,15 @@ describe('PermissionsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all permissions sorted by name', async () => {
-      const mockList = [
-        { id: 1, name: 'a' },
-        { id: 2, name: 'b' },
-      ];
+    it('should return paginated permissions', async () => {
+      const mockList = [{ id: 1, name: 'users:view' }];
       prisma.permission.findMany.mockResolvedValue(mockList);
+      prisma.permission.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
-      expect(prisma.permission.findMany).toHaveBeenCalledWith({
-        orderBy: { name: 'asc' },
-      });
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 

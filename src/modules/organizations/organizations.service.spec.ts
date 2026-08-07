@@ -17,6 +17,7 @@ describe('OrganizationsService', () => {
     organization: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
+      count: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -58,14 +59,15 @@ describe('OrganizationsService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all active organizations sorted by name', async () => {
-      const mockList = [{ id: 1, name: 'BMC' }];
+    it('should return paginated organizations', async () => {
+      const mockList = [{ id: 1, name: 'Org A' }];
       prisma.organization.findMany.mockResolvedValue(mockList);
+      prisma.organization.count.mockResolvedValue(1);
 
-      const result = await service.findAll();
+      const result = await service.findAll({ page: 1, limit: 10 });
 
-      expect(result).toEqual(mockList);
-      expect(prisma.organization.findMany).toHaveBeenCalled();
+      expect(result.data).toEqual(mockList);
+      expect(result.meta.total).toBe(1);
     });
   });
 
