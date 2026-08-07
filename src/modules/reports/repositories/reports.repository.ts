@@ -93,4 +93,40 @@ export class ReportsRepository {
 
     return { collectionsGrouped, complaintsResolvedGrouped };
   }
+
+  async getInvoicesForAging() {
+    return this.prisma.wasteInvoice.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        totalAmount: true,
+        status: true,
+        dueDate: true,
+        paidAt: true,
+        siteId: true,
+        organizationId: true,
+      },
+    });
+  }
+
+  async getCompletedDispatchesWithLogs() {
+    return this.prisma.dispatchAssignment.findMany({
+      where: { deletedAt: null, status: 'COMPLETED' },
+      include: {
+        vehicle: true,
+        stopLogs: true,
+      },
+    });
+  }
+
+  async getDispatchesWithSchedules() {
+    return this.prisma.dispatchAssignment.findMany({
+      where: { deletedAt: null },
+      include: {
+        schedule: true,
+        stopLogs: true,
+      },
+    });
+  }
 }

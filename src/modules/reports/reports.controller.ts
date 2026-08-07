@@ -39,6 +39,44 @@ export class ReportsController {
     return this.reportsService.getWorkerLeaderboard(query);
   }
 
+  @Get('financial-aging')
+  @RequirePermissions('reports:view')
+  @ApiOperation({
+    summary: 'Get Financial Revenue & Invoice Aging Report (30/60/90+ days overdue)',
+  })
+  @ApiResponse({ status: 200, description: 'Return financial revenue & aging metrics.' })
+  async getFinancialAgingReport() {
+    return this.reportsService.getFinancialAgingReport();
+  }
+
+  @Get('fuel-efficiency')
+  @RequirePermissions('reports:view')
+  @ApiOperation({
+    summary: 'Get Fleet Fuel Efficiency & Mileage Cost Report (km/L and fuel cost/ton)',
+  })
+  @ApiResponse({ status: 200, description: 'Return fuel efficiency & mileage cost metrics.' })
+  async getFuelEfficiencyReport() {
+    return this.reportsService.getFuelEfficiencyReport();
+  }
+
+  @Get('waste-segregation')
+  @RequirePermissions('reports:view')
+  @ApiOperation({
+    summary: 'Get Waste Segregation Quality & Contamination Report (% Organic vs Recyclable)',
+  })
+  @ApiResponse({ status: 200, description: 'Return waste segregation quality metrics.' })
+  async getWasteSegregationReport() {
+    return this.reportsService.getWasteSegregationReport();
+  }
+
+  @Get('route-efficiency')
+  @RequirePermissions('reports:view')
+  @ApiOperation({ summary: 'Get Route On-Time Arrival & Schedule Delay Report' })
+  @ApiResponse({ status: 200, description: 'Return route timing & delay metrics.' })
+  async getRouteEfficiencyReport() {
+    return this.reportsService.getRouteEfficiencyReport();
+  }
+
   @Get('export/waste-collections.csv')
   @RequirePermissions('reports:view')
   @Header('Content-Type', 'text/csv')

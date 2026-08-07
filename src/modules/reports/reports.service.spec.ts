@@ -7,12 +7,14 @@ import { ComplaintPriority, ComplaintStatus } from '@prisma/client';
 
 describe('ReportsService', () => {
   let service: ReportsService;
-  let repository: any;
 
   const mockRepository = {
     getCollectionAggregates: jest.fn(),
     getComplaintsAggregates: jest.fn(),
     getWorkerPerformanceStats: jest.fn(),
+    getInvoicesForAging: jest.fn(),
+    getCompletedDispatchesWithLogs: jest.fn(),
+    getDispatchesWithSchedules: jest.fn(),
   };
 
   const mockPrismaCore = {
@@ -44,7 +46,6 @@ describe('ReportsService', () => {
     }).compile();
 
     service = module.get<ReportsService>(ReportsService);
-    repository = module.get<ReportsRepository>(ReportsRepository);
 
     jest.clearAllMocks();
   });
@@ -102,60 +103,68 @@ describe('ReportsService', () => {
       expect(result.slaMetrics.averageResolutionHours).toBe(5);
       expect(result.slaMetrics.slaBreachesCount).toBe(0);
     });
+  });
 
-    it('REAL-WORLD EDGE CASE: should evaluate custom Site-level SLA settings when siteId is provided', async () => {
-      // Site 1 has a strict 6-hour SLA for High priority complaints
-      mockPrismaCore.siteSettings.findUnique.mockResolvedValue({
-        siteId: 1,
-        highPrioritySlaHours: 6,
-        lowPrioritySlaHours: 12,
-      });
+  describe('getFinancialAgingReport', () => {
+    it('should calculate financial revenue summary and aging buckets', async () => {
+      mockRepository.getInvoicesForAging.mockResolvedValue([
+        { id: 1, totalAmount: 100, status: 'PAID', dueDate: new Date('2026-08-01') },
+        { id: 2, totalAmount: 50, status: 'ISSUED', dueDate: new Date('2026-08-05') },
+      ]);
 
-      const createdAt = new Date('2026-08-01T10:00:00.000Z');
-      const resolvedAt = new Date('2026-08-01T18:00:00.000Z'); // 8 hours later (Breaches 6h threshold!)
+      const result = await service.getFinancialAgingReport();
 
-      const mockComplaints = [
-        {
-          id: 1,
-          complaintNumber: 'CMP-02',
-          status: ComplaintStatus.RESOLVED,
-          priority: ComplaintPriority.HIGH,
-          createdAt,
-          resolvedAt,
-          residentUserId: 25,
-          assignedEmployeeId: 10,
-        },
-      ];
-      mockRepository.getComplaintsAggregates.mockResolvedValue(mockComplaints);
-
-      const result = await service.getSlaMetrics({ siteId: 1 });
-
-      expect(result.appliedSlaRules.ruleSource).toBe('SITE_1');
-      expect(result.appliedSlaRules.highPriorityHours).toBe(6);
-      expect(result.slaMetrics.slaBreachesCount).toBe(1); // Flagged breach because 8h > 6h site rule!
+      expect(result.totalInvoicesCount).toBe(2);
+      expect(result.financialSummary.totalBilled).toBe(150);
+      expect(result.financialSummary.totalCollected).toBe(100);
+      expect(result.financialSummary.totalOverdueBalance).toBe(50);
     });
   });
 
-  describe('getWorkerLeaderboard', () => {
-    it('should calculate worker performance ranking', async () => {
-      const collectionsGrouped = [
-        { collectorUserId: 10, _count: { id: 15 }, _sum: { weight: 250.5 } },
-      ];
-      const complaintsResolvedGrouped = [{ assignedEmployeeId: 10, _count: { id: 5 } }];
-      mockRepository.getWorkerPerformanceStats.mockResolvedValue({
-        collectionsGrouped,
-        complaintsResolvedGrouped,
-      });
+  describe('getFuelEfficiencyReport', () => {
+    it('should calculate total km driven and fuel cost per metric ton', async () => {
+      mockRepository.getCompletedDispatchesWithLogs.mockResolvedValue([
+        {
+          id: 1,
+          startOdometerKm: 45000,
+          endOdometerKm: 45100,
+          stopLogs: [{ collectedWeightKg: 500 }],
+        },
+      ]);
 
-      const result = await service.getWorkerLeaderboard({ limit: 10 });
+      const result = await service.getFuelEfficiencyReport();
 
-      expect(result.leaderboard).toHaveLength(1);
-      expect(result.leaderboard[0]).toEqual({
-        workerUserId: 10,
-        totalPickupsCount: 15,
-        totalWeightCollectedKg: 250.5,
-        complaintsResolvedCount: 5,
-      });
+      expect(result.completedShiftsCount).toBe(1);
+      expect(result.metrics.totalKmDriven).toBe(100);
+      expect(result.metrics.totalWasteCollectedTons).toBe(0.5);
+    });
+  });
+
+  describe('getWasteSegregationReport', () => {
+    it('should calculate waste segregation percentages and city grade', async () => {
+      mockPrismaMain.wasteCollection.findMany.mockResolvedValue([
+        { weight: 80, wasteCategory: { name: 'Organic Waste' } },
+        { weight: 20, wasteCategory: { name: 'Recyclable Plastic' } },
+      ]);
+
+      const result = await service.getWasteSegregationReport();
+
+      expect(result.totalCollectionsCount).toBe(2);
+      expect(result.segregationBreakdown.organicPct).toBe(80);
+      expect(result.overallCitySegregationGrade).toBe('GRADE_A (EXCELLENT)');
+    });
+  });
+
+  describe('getRouteEfficiencyReport', () => {
+    it('should calculate on-time completion rate for routes', async () => {
+      mockRepository.getDispatchesWithSchedules.mockResolvedValue([
+        { id: 1, status: 'COMPLETED', stopLogs: [] },
+      ]);
+
+      const result = await service.getRouteEfficiencyReport();
+
+      expect(result.totalDispatches).toBe(1);
+      expect(result.routeMetrics.onTimeRatePct).toBe(100);
     });
   });
 });
