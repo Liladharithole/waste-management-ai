@@ -1,5 +1,6 @@
-import { Controller, Get, Header, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ReportsService } from './reports.service';
 import { WasteSummaryQueryDto } from './dto/waste-summary-query.dto';
 import { SlaQueryDto } from './dto/sla-query.dto';
@@ -16,6 +17,8 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('waste-summary')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000) // Cache result in Redis for 5 minutes (300,000 ms)
   @RequirePermissions('reports:view')
   @ApiOperation({ summary: 'Get total waste weight metrics and CO2 Carbon Offset analytics' })
   @ApiResponse({ status: 200, description: 'Return aggregated waste & CO2 offset summary.' })
@@ -24,6 +27,8 @@ export class ReportsController {
   }
 
   @Get('complaint-sla')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({ summary: 'Get complaint SLA resolution time and breach analytics' })
   @ApiResponse({ status: 200, description: 'Return SLA resolution metrics.' })
@@ -32,6 +37,8 @@ export class ReportsController {
   }
 
   @Get('worker-leaderboard')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({ summary: 'Get worker performance leaderboard (pickups & complaint fixes)' })
   @ApiResponse({ status: 200, description: 'Return worker performance ranking.' })
@@ -40,6 +47,8 @@ export class ReportsController {
   }
 
   @Get('financial-aging')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({
     summary: 'Get Financial Revenue & Invoice Aging Report (30/60/90+ days overdue)',
@@ -50,6 +59,8 @@ export class ReportsController {
   }
 
   @Get('fuel-efficiency')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({
     summary: 'Get Fleet Fuel Efficiency & Mileage Cost Report (km/L and fuel cost/ton)',
@@ -60,6 +71,8 @@ export class ReportsController {
   }
 
   @Get('waste-segregation')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({
     summary: 'Get Waste Segregation Quality & Contamination Report (% Organic vs Recyclable)',
@@ -70,6 +83,8 @@ export class ReportsController {
   }
 
   @Get('route-efficiency')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000)
   @RequirePermissions('reports:view')
   @ApiOperation({ summary: 'Get Route On-Time Arrival & Schedule Delay Report' })
   @ApiResponse({ status: 200, description: 'Return route timing & delay metrics.' })

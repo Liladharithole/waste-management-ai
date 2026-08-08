@@ -15,6 +15,7 @@ import { RolesModule } from './modules/roles/roles.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { GoogleMapsModule } from './modules/google-maps/google-maps.module';
 import { SitesModule } from './modules/sites/sites.module';
+import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
 import { BuildingsModule } from './modules/buildings/buildings.module';
 import { FloorsModule } from './modules/floors/floors.module';
 import { UnitsModule } from './modules/units/units.module';
@@ -38,6 +39,7 @@ import { ResidentPortalModule } from './modules/resident-portal/resident-portal.
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { DriverAppModule } from './modules/driver-app/driver-app.module';
 import { VendorApiModule } from './modules/vendor-api/vendor-api.module';
+import { QueuesModule } from './modules/queues/queues.module';
 
 @Module({
   imports: [
@@ -72,6 +74,7 @@ import { VendorApiModule } from './modules/vendor-api/vendor-api.module';
     OrganizationsModule,
     GoogleMapsModule,
     SitesModule,
+    SiteSettingsModule,
     BuildingsModule,
     FloorsModule,
     UnitsModule,
@@ -94,6 +97,7 @@ import { VendorApiModule } from './modules/vendor-api/vendor-api.module';
     NotificationsModule,
     DriverAppModule,
     VendorApiModule,
+    QueuesModule,
   ],
   controllers: [AppController],
   providers: [
